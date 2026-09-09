@@ -1,62 +1,35 @@
 {% extends "base.html" %}
 {% block body %}
+<style>
+.complete-shell{width:100%;max-width:760px;margin:0 auto}.complete-hero{padding:24px 20px;border-radius:20px;background:linear-gradient(145deg,#0f172a,#172554);color:#fff;text-align:center;box-shadow:0 14px 34px rgba(15,23,42,.14);margin:10px 0 14px}.complete-badge{width:64px;height:64px;border-radius:20px;background:linear-gradient(145deg,#f8e7a8,#c9952e);color:#0f172a;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900}.complete-hero h1{margin:0 0 7px;font-size:27px}.complete-hero p{margin:0;color:#cbd5e1;font-size:13px;line-height:1.55}.result-card{background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:20px;box-shadow:0 8px 24px rgba(15,23,42,.05)}.result-label{text-align:center;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#64748b}.result-code{margin:10px 0 14px;padding:16px;border:1px dashed #c9952e;border-radius:14px;background:#fff9e8;text-align:center;font-size:28px;font-weight:900;letter-spacing:2px;color:#0f172a}.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.copy-btn{background:#f8fafc!important;color:#334155!important;border:1px solid #e2e8f0!important}.send-btn{background:linear-gradient(135deg,#c9952e,#e0b84e)!important;color:#0f172a!important;box-shadow:0 7px 18px rgba(201,149,46,.18)}.status-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:15px}.status-item{padding:11px 7px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;text-align:center;font-size:11px;color:#64748b}.status-item b{display:block;font-size:14px;color:#0f172a;margin-bottom:3px}.complete-note{margin-top:14px;padding:12px 13px;border-radius:13px;background:#f8fafc;border:1px solid #e2e8f0;color:#475569;font-size:12px;line-height:1.55}.copy-state{text-align:center;min-height:17px;margin-top:7px;font-size:11px;color:#15803d}@media(max-width:460px){.complete-hero{padding:21px 16px}.complete-hero h1{font-size:23px}.result-card{padding:15px}.result-code{font-size:23px}.result-grid{grid-template-columns:1fr}.status-row{grid-template-columns:1fr 1fr 1fr;gap:5px}.status-item{padding:9px 4px}}
+</style>
+<div class="complete-shell">
+  <section class="complete-hero">
+    <div class="complete-badge">✓</div>
+    <h1>Hoàn thành nhiệm vụ</h1>
+    <p>Bạn đã hoàn thành đủ 10/10 nhiệm vụ trong lượt hôm nay.</p>
+  </section>
 
-<div class="card">
-  <h2>Hoàn thành nhiệm vụ</h2>
+  <section class="result-card">
+    <div class="result-label">Mã kết quả của bạn</div>
+    <div id="code" class="result-code">{{ prog['result_code'] }}</div>
+    <div class="result-grid">
+      <button class="btn copy-btn" type="button" onclick="copyCode()">Sao chép mã</button>
+      <button class="btn send-btn" type="button" onclick="sendToSupport()">Gửi CSKH</button>
+    </div>
+    <div id="copyState" class="copy-state"></div>
 
-  <div class="msg success">
-    ✓ Bạn đã hoàn thành 10/10 nhiệm vụ.
-  </div>
-
-  <div style="text-align:center;border:1px solid #e5e7eb;border-radius:14px;padding:14px">
-    <div class="small">Mã hoàn thành của bạn</div>
-
-    <div id="code" style="font-size:26px;font-weight:800;letter-spacing:2px">
-      {{ prog['result_code'] }}
+    <div class="status-row">
+      <div class="status-item"><b>10/10</b>Nhiệm vụ</div>
+      <div class="status-item"><b>20/20</b>Điểm</div>
+      <div class="status-item"><b>Hoàn tất</b>Trạng thái</div>
     </div>
 
-    <button
-      class="btn secondary"
-      type="button"
-      onclick="copyCode()">
-      Sao chép mã
-    </button>
-  </div>
-
-  <p>
-    Nhấn nút bên dưới để gửi mã hoàn thành trực tiếp cho chăm sóc khách hàng.
-  </p>
-
-  <button
-    class="btn"
-    type="button"
-    onclick="sendToSupport()">
-    Gửi mã cho chăm sóc khách hàng
-  </button>
+    <div class="complete-note">Hãy gửi mã kết quả cho Chăm sóc khách hàng nếu bạn cần đối chiếu lượt nhiệm vụ. Mã này dùng để nhận diện kết quả trong hệ thống.</div>
+  </section>
 </div>
-
 <script>
-function copyCode() {
-    const code = document.getElementById("code").innerText.trim();
-    navigator.clipboard.writeText(code);
-}
-
-function sendToSupport() {
-    window.$crisp = window.$crisp || [];
-
-    const code = document.getElementById("code").innerText.trim();
-
-    window.$crisp.push(["do", "chat:open"]);
-
-    window.$crisp.push([
-        "do",
-        "message:send",
-        [
-            "text",
-            "Tôi đã hoàn thành 10/10 nhiệm vụ. Mã hoàn thành của tôi: " + code
-        ]
-    ]);
-}
+async function copyCode(){const code=document.getElementById('code').innerText.trim();const state=document.getElementById('copyState');try{await navigator.clipboard.writeText(code);state.textContent='✓ Đã sao chép mã';}catch(e){state.textContent='Không thể tự sao chép. Vui lòng nhấn giữ mã để sao chép.';}}
+function sendToSupport(){window.$crisp=window.$crisp||[];const code=document.getElementById('code').innerText.trim();window.$crisp.push(['do','chat:open']);window.$crisp.push(['do','message:send',['text','Tôi đã hoàn thành 10/10 nhiệm vụ. Mã kết quả của tôi: '+code]]);}
 </script>
-
 {% endblock %}

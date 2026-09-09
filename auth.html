@@ -1,0 +1,25 @@
+
+{% extends "base.html" %}{% block body %}
+<div class="card">
+<div class="tabs">
+<button onclick="show('login')">Đăng nhập</button>
+<button onclick="show('register')">Đăng ký</button>
+</div>
+<div id="login">
+<h2>Đăng nhập</h2>
+<form method="post" action="/login">
+<label>Số điện thoại</label><input name="phone" required>
+<label>Mật khẩu</label><input name="password" type="password" required>
+<button class="btn">Đăng nhập</button>
+</form></div>
+<div id="register" style="display:none">
+<h2>Đăng ký</h2>
+<form method="post" action="/register">
+<label>Họ và tên</label><input name="name" required>
+<label>Số điện thoại</label><input name="phone" required>
+<label>Mật khẩu</label><input name="password" type="password" required>
+<button class="btn">Đăng ký</button>
+</form></div>
+</div>
+<script>function show(x){document.getElementById('login').style.display=x==='login'?'block':'none';document.getElementById('register').style.display=x==='register'?'block':'none'}</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+
+{% extends "base.html" %}{% block body %}
+<div class="card">
+  <h2>Chọn gói điểm</h2>
+  <p class="small">Sau khi chọn, bạn sẽ được chuyển thẳng sang Chăm sóc khách hàng để nhận mã.</p>
+  <form method="post" action="/choose-package">
+    <div class="grid">
+      {% for p in packages %}
+      <label class="pkg">
+        <input type="radio" name="package_idx" value="{{loop.index0}}" required>
+        <b>{{p[0]}}</b>
+        <div class="small">Thưởng {{p[1]}}</div>
+      </label>
+      {% endfor %}
+    </div>
+    <button class="btn">Chọn gói & liên hệ CSKH</button>
+  </form>
+</div>
+{% endblock %}

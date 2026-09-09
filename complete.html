@@ -1,0 +1,11 @@
+
+{% extends "base.html" %}{% block body %}
+<div class="card"><h2>Liên hệ chăm sóc khách hàng</h2>
+<div class="msg success">✓ Bạn đã hoàn thành 10/10 nhiệm vụ.</div>
+<div style="text-align:center;border:1px solid #e5e7eb;border-radius:14px;padding:14px">
+<div class="small">Mã hoàn thành của bạn</div><div id="code" style="font-size:26px;font-weight:800;letter-spacing:2px">{{prog['result_code']}}</div>
+<button class="btn secondary" onclick="navigator.clipboard.writeText(document.getElementById('code').innerText)">Sao chép mã</button>
+</div>
+<p>Gửi mã này cho chăm sóc khách hàng để xác nhận hoàn thành.</p>
+<button class="btn" onclick="if(window.Tawk_API) Tawk_API.maximize()">Nhắn chăm sóc khách hàng</button>
+</div>{% endblock %}

@@ -1,0 +1,13 @@
+
+{% extends "base.html" %}{% block body %}
+<div class="card">
+  <h2>Đăng nhập CSKH</h2>
+  <form method="post">
+    <input type="hidden" name="action" value="login">
+    <label>Mật khẩu quản trị</label>
+    <input name="password" type="password" required>
+    <button class="btn">Đăng nhập</button>
+  </form>
+  <p class="small">Đổi mật khẩu bằng biến môi trường ADMIN_PASSWORD trước khi đưa website lên mạng.</p>
+</div>
+{% endblock %}

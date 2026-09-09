@@ -1,0 +1,45 @@
+
+{% extends "base.html" %}{% block body %}
+<div class="card">
+  <h2>Chăm sóc khách hàng</h2>
+  <div class="msg success">
+    <b>Gói đã chọn và gửi sang CSKH:</b> {{prog['package_name']}}<br>
+    <b>Điểm thưởng:</b> {{prog['reward_name']}}
+  </div>
+
+  <p>Nhấn nút bên dưới để liên hệ chăm sóc khách hàng. CSKH sẽ thấy đúng gói đang lưu trên tài khoản và chỉ có thể cấp mã cho chính gói đó.</p>
+
+  <button class="btn" onclick="openSupport()">Nhắn chăm sóc khách hàng</button>
+
+  <hr style="border:0;border-top:1px solid #e5e7eb;margin:18px 0">
+
+  <h3 style="margin-bottom:6px">Bạn đã có mã?</h3>
+  <form method="post">
+    <label>Nhập mã</label>
+    <input name="code" placeholder="Nhập mã dùng 1 lần do CSKH cấp cho đúng tài khoản và đúng gói" required>
+    <button class="btn secondary">Xác nhận mã</button>
+  </form>
+
+  <a class="btn back" href="/packages">← Chọn lại gói điểm</a>
+</div>
+
+
+{% endblock %}
+
+<script>
+function openSupport(){
+  try{
+    window.$crisp = window.$crisp || [];
+
+    // Gắn thông tin gói hiện tại vào phiên Crisp để CSKH đối chiếu.
+    $crisp.push(["set", "session:data", [[
+      ["goi_diem", "{{prog['package_name']}}"],
+      ["diem_thuong", "{{prog['reward_name']}}"]
+    ]]]);
+
+    $crisp.push(["do", "chat:open"]);
+  }catch(e){
+    alert("Khung chăm sóc khách hàng đang tải. Vui lòng thử lại sau vài giây.");
+  }
+}
+</script>

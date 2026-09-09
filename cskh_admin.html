@@ -1,25 +1,18 @@
-
 {% extends "base.html" %}{% block body %}
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
     <h2 style="margin:0">Khách đang chờ cấp mã</h2>
     <a href="/cskh/logout">Đăng xuất</a>
   </div>
-  <p class="small">
-    Gói của khách được lấy trực tiếp từ tài khoản. CSKH không thể tự đổi sang gói khác khi cấp mã.
-  </p>
+  <p class="small">Mỗi mã chỉ dùng 1 lần và có hiệu lực trong 10 phút kể từ lúc tạo.</p>
 
   {% if generated_code %}
   <div class="msg success" style="margin-top:14px">
-    <div><b>Đã cấp mã cho:</b> {{generated_for['name']}} · {{generated_for['phone']}}</div>
-    <div><b>Đúng gói:</b> {{generated_for['package_name']}} → thưởng {{generated_for['reward_name']}}</div>
-    <div id="newcode" style="font-size:28px;font-weight:800;letter-spacing:2px;text-align:center;margin:10px 0">
-      {{generated_code}}
-    </div>
-    <button class="btn secondary"
-      onclick="navigator.clipboard.writeText(document.getElementById('newcode').innerText)">
-      Sao chép mã
-    </button>
+    <div><b>Đã cấp mã cho:</b> {{ generated_for['name'] }} · {{ generated_for['phone'] }}</div>
+    <div><b>Đúng gói:</b> {{ generated_for['package_name'] }} → thưởng {{ generated_for['reward_name'] }}</div>
+    <div class="small" style="margin-top:6px">Mã này có hiệu lực 10 phút.</div>
+    <div id="newcode" style="font-size:28px;font-weight:800;letter-spacing:2px;text-align:center;margin:10px 0">{{ generated_code }}</div>
+    <button class="btn secondary" onclick="navigator.clipboard.writeText(document.getElementById('newcode').innerText)">Sao chép mã</button>
   </div>
   {% endif %}
 </div>
@@ -28,23 +21,21 @@
 <div class="card">
   <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
     <div>
-      <b style="font-size:18px">{{c['name']}}</b>
-      <div class="small">{{c['phone']}}</div>
+      <b style="font-size:18px">{{ c['name'] }}</b>
+      <div class="small">{{ c['phone'] }}</div>
     </div>
-    <span style="background:#eff6ff;color:#1d4ed8;border-radius:999px;padding:6px 10px;font-weight:700">
-      {{c['package_name']}}
-    </span>
+    <span style="background:#eff6ff;color:#1d4ed8;border-radius:999px;padding:6px 10px;font-weight:700">{{ c['package_name'] }}</span>
   </div>
 
   <div style="margin-top:12px">
-    <b>Gói khách đã chọn:</b> {{c['package_name']}}<br>
-    <b>Điểm thưởng:</b> {{c['reward_name']}}
+    <b>Gói khách đã chọn:</b> {{ c['package_name'] }}<br>
+    <b>Điểm thưởng:</b> {{ c['reward_name'] }}
   </div>
 
   <form method="post">
     <input type="hidden" name="action" value="generate">
-    <input type="hidden" name="customer_id" value="{{c['id']}}">
-    <button class="btn">Cấp mã cho đúng gói {{c['package_name']}}</button>
+    <input type="hidden" name="customer_id" value="{{ c['id'] }}">
+    <button class="btn">Tạo mã mới 10 phút</button>
   </form>
 </div>
 {% else %}
@@ -54,22 +45,28 @@
 <div class="card">
   <h3>Lịch sử mã gần đây</h3>
   <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:620px">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:720px">
       <tr>
         <th style="text-align:left;padding:8px;border-bottom:1px solid #ddd">Khách</th>
         <th style="text-align:left;padding:8px;border-bottom:1px solid #ddd">Mã</th>
         <th style="text-align:left;padding:8px;border-bottom:1px solid #ddd">Gói</th>
+        <th style="text-align:left;padding:8px;border-bottom:1px solid #ddd">Hết hạn lúc</th>
         <th style="text-align:left;padding:8px;border-bottom:1px solid #ddd">Trạng thái</th>
       </tr>
       {% for c in codes %}
       <tr>
+        <td style="padding:8px;border-bottom:1px solid #eee">{{ c['customer_name'] or '-' }}<br><span class="small">{{ c['customer_phone'] or '' }}</span></td>
+        <td style="padding:8px;border-bottom:1px solid #eee"><b>{{ c['code'] }}</b></td>
+        <td style="padding:8px;border-bottom:1px solid #eee">{{ c['package_name'] }}</td>
+        <td style="padding:8px;border-bottom:1px solid #eee">{{ c['expires_at'] or '-' }}</td>
         <td style="padding:8px;border-bottom:1px solid #eee">
-          {{c['customer_name'] or '-'}}<br><span class="small">{{c['customer_phone'] or ''}}</span>
-        </td>
-        <td style="padding:8px;border-bottom:1px solid #eee"><b>{{c['code']}}</b></td>
-        <td style="padding:8px;border-bottom:1px solid #eee">{{c['package_name']}}</td>
-        <td style="padding:8px;border-bottom:1px solid #eee">
-          {% if c['used'] %}Đã dùng{% else %}Chưa dùng{% endif %}
+          {% if c['used'] %}
+            Đã dùng
+          {% elif c['expired'] %}
+            <span style="color:#b91c1c;font-weight:700">Đã hết hạn</span>
+          {% else %}
+            <span style="color:#166534;font-weight:700">Còn hiệu lực</span>
+          {% endif %}
         </td>
       </tr>
       {% endfor %}

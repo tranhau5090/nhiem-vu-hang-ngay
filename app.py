@@ -11,7 +11,6 @@ app = Flask(__name__, template_folder=".")
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key")
 
 DB = os.path.join(os.path.dirname(__file__), "app.db")
-
 VIETNAM_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 
 
@@ -50,7 +49,6 @@ def conn():
 
 
 def today_vn():
-    """Ngày hiện tại theo múi giờ Việt Nam."""
     return datetime.now(VIETNAM_TZ).date().isoformat()
 
 
@@ -172,7 +170,7 @@ def completed_today(user_id):
 # TRANG CHỦ
 # =========================================================
 
-@app.route("/", methods=["GET"])
+@app.get("/")
 def index():
 
     if current_user():
@@ -190,26 +188,30 @@ def register():
 
     name = request.form.get("name", "").strip()
     phone = request.form.get("phone", "").strip()
-
     password = request.form.get("password", "")
-    confirm_password = request.form.get(
-        "confirm_password",
-        ""
-    )
+    confirm_password = request.form.get("confirm_password", "")
 
-    if not name or not phone or not password:
+    if (
+        not name
+        or not phone
+        or not password
+        or not confirm_password
+    ):
+
         flash(
             "Vui lòng nhập đầy đủ thông tin.",
             "error"
         )
+
         return redirect(url_for("index"))
 
-    # Kiểm tra nhập lại mật khẩu
-    if confirm_password and password != confirm_password:
+    if password != confirm_password:
+
         flash(
             "Mật khẩu nhập lại không khớp.",
             "error"
         )
+
         return redirect(url_for("index"))
 
     c = conn()
@@ -276,9 +278,12 @@ def login():
 
     c.close()
 
-    if not u or not check_password_hash(
-        u["password_hash"],
-        password
+    if (
+        not u
+        or not check_password_hash(
+            u["password_hash"],
+            password
+        )
     ):
 
         flash(
@@ -290,7 +295,22 @@ def login():
 
     session["uid"] = u["id"]
 
-    return redirect(url_for("packages"))
+    # Nếu đã hoàn thành hôm nay,
+    # đăng nhập lại chỉ hiện thông báo.
+    if completed_today(u["id"]):
+
+        session.pop(
+            "show_result_code",
+            None
+        )
+
+        return redirect(
+            url_for("complete")
+        )
+
+    return redirect(
+        url_for("packages")
+    )
 
 
 # =========================================================
@@ -302,34 +322,35 @@ def logout():
 
     session.clear()
 
-    return redirect(url_for("index"))
+    return redirect(
+        url_for("index")
+    )
 
 
 # =========================================================
 # CHỌN GÓI
 # =========================================================
 
-@app.route("/packages")
+@app.get("/packages")
 def packages():
 
     u = current_user()
 
     if not u:
-        return redirect(url_for("index"))
-
-    # Đã hoàn thành hôm nay
-    if completed_today(u["id"]):
-
-        flash(
-            "Bạn đã hoàn thành lượt nhiệm vụ hôm nay. "
-            "Vui lòng quay lại vào ngày mai.",
-            "error"
+        return redirect(
+            url_for("index")
         )
 
-        prog = get_progress(u["id"])
+    if completed_today(u["id"]):
 
-        if prog and prog["result_code"]:
-            return redirect(url_for("complete"))
+        session.pop(
+            "show_result_code",
+            None
+        )
+
+        return redirect(
+            url_for("complete")
+        )
 
     return render_template(
         "packages.html",
@@ -348,27 +369,31 @@ def choose_package():
     u = current_user()
 
     if not u:
-        return redirect(url_for("index"))
-
-    # Không cho mở lượt thứ 2 trong ngày
-    if completed_today(u["id"]):
-
-        flash(
-            "Tài khoản này đã hoàn thành "
-            "1 lượt nhiệm vụ hôm nay. "
-            "Ngày mai bạn mới có thể làm lượt mới.",
-            "error"
+        return redirect(
+            url_for("index")
         )
 
-        return redirect(url_for("complete"))
+    # Không cho làm lượt thứ 2 trong ngày
+    if completed_today(u["id"]):
+
+        session.pop(
+            "show_result_code",
+            None
+        )
+
+        return redirect(
+            url_for("complete")
+        )
 
     try:
+
         idx = int(
             request.form.get(
                 "package_idx",
                 "-1"
             )
         )
+
     except (TypeError, ValueError):
 
         idx = -1
@@ -380,9 +405,11 @@ def choose_package():
             "error"
         )
 
-        return redirect(url_for("packages"))
+        return redirect(
+            url_for("packages")
+        )
 
-    p, r = PACKAGES[idx]
+    package_name, reward_name = PACKAGES[idx]
 
     c = conn()
 
@@ -399,7 +426,6 @@ def choose_package():
 
         ON CONFLICT(user_id)
         DO UPDATE SET
-
             package_name=excluded.package_name,
             reward_name=excluded.reward_name,
             access_code=NULL,
@@ -407,11 +433,11 @@ def choose_package():
             result_code=NULL
     """, (
         u["id"],
-        p,
-        r
+        package_name,
+        reward_name
     ))
 
-    # Xóa nhiệm vụ cũ để chuẩn bị lượt mới
+    # Xóa nhiệm vụ của lượt cũ
     c.execute(
         "DELETE FROM task_completions "
         "WHERE user_id=?",
@@ -421,31 +447,38 @@ def choose_package():
     c.commit()
     c.close()
 
-    return redirect(url_for("support"))
+    return redirect(
+        url_for("support")
+    )
 
 
 # =========================================================
 # CHĂM SÓC KHÁCH HÀNG + NHẬP MÃ
 # =========================================================
 
-@app.route("/support", methods=["GET", "POST"])
+@app.route(
+    "/support",
+    methods=["GET", "POST"]
+)
 def support():
 
     u = current_user()
 
     if not u:
-        return redirect(url_for("index"))
-
-    # Đã làm đủ hôm nay thì không cho nhập mã khác
-    if completed_today(u["id"]):
-
-        flash(
-            "Bạn đã hoàn thành lượt nhiệm vụ hôm nay. "
-            "Ngày mai bạn mới có thể làm lại.",
-            "error"
+        return redirect(
+            url_for("index")
         )
 
-        return redirect(url_for("complete"))
+    if completed_today(u["id"]):
+
+        session.pop(
+            "show_result_code",
+            None
+        )
+
+        return redirect(
+            url_for("complete")
+        )
 
     c = conn()
 
@@ -457,7 +490,10 @@ def support():
     c.close()
 
     if not prog:
-        return redirect(url_for("packages"))
+
+        return redirect(
+            url_for("packages")
+        )
 
     if request.method == "POST":
 
@@ -473,18 +509,20 @@ def support():
                 "error"
             )
 
-            return redirect(url_for("support"))
-
-        # Kiểm tra lại ngay trước khi dùng mã
-        if completed_today(u["id"]):
-
-            flash(
-                "Tài khoản này đã hoàn thành "
-                "lượt nhiệm vụ hôm nay.",
-                "error"
+            return redirect(
+                url_for("support")
             )
 
-            return redirect(url_for("complete"))
+        if completed_today(u["id"]):
+
+            session.pop(
+                "show_result_code",
+                None
+            )
+
+            return redirect(
+                url_for("complete")
+            )
 
         c = conn()
 
@@ -492,7 +530,9 @@ def support():
             SELECT *
             FROM access_codes
             WHERE code=?
-        """, (code,)).fetchone()
+        """, (
+            code,
+        )).fetchone()
 
         if not row:
 
@@ -503,7 +543,9 @@ def support():
                 "error"
             )
 
-            return redirect(url_for("support"))
+            return redirect(
+                url_for("support")
+            )
 
         if row["used"]:
 
@@ -514,7 +556,9 @@ def support():
                 "error"
             )
 
-            return redirect(url_for("support"))
+            return redirect(
+                url_for("support")
+            )
 
         if (
             row["assigned_user_id"] is not None
@@ -528,21 +572,26 @@ def support():
                 "error"
             )
 
-            return redirect(url_for("support"))
+            return redirect(
+                url_for("support")
+            )
 
-        if row["package_name"] != prog["package_name"]:
+        if (
+            row["package_name"]
+            != prog["package_name"]
+        ):
 
             c.close()
 
             flash(
-                "Mã không đúng với gói điểm "
-                "bạn đã chọn.",
+                "Mã không đúng với gói điểm bạn đã chọn.",
                 "error"
             )
 
-            return redirect(url_for("support"))
+            return redirect(
+                url_for("support")
+            )
 
-        # Đánh dấu mã đã dùng
         cur = c.execute("""
             UPDATE access_codes
 
@@ -569,9 +618,10 @@ def support():
                 "error"
             )
 
-            return redirect(url_for("support"))
+            return redirect(
+                url_for("support")
+            )
 
-        # Mở nhiệm vụ
         c.execute("""
             UPDATE progress
 
@@ -595,7 +645,9 @@ def support():
         c.commit()
         c.close()
 
-        return redirect(url_for("tasks"))
+        return redirect(
+            url_for("tasks")
+        )
 
     return render_template(
         "support.html",
@@ -607,17 +659,21 @@ def support():
 # TRANG NHIỆM VỤ
 # =========================================================
 
-@app.route("/tasks")
+@app.get("/tasks")
 def tasks():
 
     u = current_user()
 
     if not u:
-        return redirect(url_for("index"))
+        return redirect(
+            url_for("index")
+        )
 
-    # Nếu đã hoàn thành hôm nay
     if completed_today(u["id"]):
-        return redirect(url_for("complete"))
+
+        return redirect(
+            url_for("complete")
+        )
 
     c = conn()
 
@@ -626,19 +682,21 @@ def tasks():
         (u["id"],)
     ).fetchone()
 
-    if not prog or not prog["access_code"]:
+    if (
+        not prog
+        or not prog["access_code"]
+    ):
 
         c.close()
 
-        return redirect(url_for("support"))
+        return redirect(
+            url_for("support")
+        )
 
     done_rows = c.execute("""
         SELECT task_id
-
         FROM task_completions
-
         WHERE user_id=?
-
         ORDER BY task_id
     """, (
         u["id"],
@@ -650,11 +708,12 @@ def tasks():
     }
 
     likes = len(done_ids)
-
     result_code = prog["result_code"]
 
-    # Trường hợp đã đủ 10 nhiệm vụ
+    # Dự phòng nếu database đã có đủ 10 nhiệm vụ
     if likes >= 10:
+
+        likes = 10
 
         if not result_code:
 
@@ -688,13 +747,16 @@ def tasks():
         c.commit()
         c.close()
 
-        return redirect(url_for("complete"))
+        # Cho hiện mã lần đầu
+        session["show_result_code"] = True
+
+        return redirect(
+            url_for("complete")
+        )
 
     c.execute("""
         UPDATE progress
-
         SET likes=?
-
         WHERE user_id=?
     """, (
         likes,
@@ -734,14 +796,13 @@ def like():
             "message": "Chưa đăng nhập."
         }), 401
 
-    # Chặn tuyệt đối lượt thứ 2 trong ngày
     if completed_today(u["id"]):
 
         return jsonify({
             "ok": False,
             "daily_limit": True,
             "message":
-                "Bạn đã hoàn thành lượt nhiệm vụ hôm nay. "
+                "Bạn đã hoàn thành nhiệm vụ hôm nay. "
                 "Vui lòng quay lại vào ngày mai."
         }), 403
 
@@ -779,7 +840,10 @@ def like():
         (u["id"],)
     ).fetchone()
 
-    if not prog or not prog["access_code"]:
+    if (
+        not prog
+        or not prog["access_code"]
+    ):
 
         c.close()
 
@@ -791,9 +855,7 @@ def like():
 
     already = c.execute("""
         SELECT 1
-
         FROM task_completions
-
         WHERE
             user_id=?
             AND task_id=?
@@ -806,9 +868,7 @@ def like():
 
         likes = c.execute("""
             SELECT COUNT(*) AS n
-
             FROM task_completions
-
             WHERE user_id=?
         """, (
             u["id"],
@@ -831,7 +891,6 @@ def like():
                 user_id,
                 task_id
             )
-
             VALUES(?,?)
         """, (
             u["id"],
@@ -840,9 +899,7 @@ def like():
 
         likes = c.execute("""
             SELECT COUNT(*) AS n
-
             FROM task_completions
-
             WHERE user_id=?
         """, (
             u["id"],
@@ -850,7 +907,6 @@ def like():
 
         result_code = prog["result_code"]
 
-        # Hoàn thành đủ 10 nhiệm vụ
         if likes >= 10:
 
             likes = 10
@@ -869,31 +925,30 @@ def like():
                     )
                 )
 
-            # Đây là thời điểm ghi nhận
-            # tài khoản đã dùng lượt hôm nay
             c.execute("""
                 UPDATE progress
 
                 SET
-                    likes=?,
+                    likes=10,
                     result_code=?,
                     last_completed_date=?
 
                 WHERE user_id=?
             """, (
-                likes,
                 result_code,
                 today_vn(),
                 u["id"]
             ))
 
+            # Cho phép hiện mã KQ ở lần mở
+            # trang hoàn thành ngay sau 10/10.
+            session["show_result_code"] = True
+
         else:
 
             c.execute("""
                 UPDATE progress
-
                 SET likes=?
-
                 WHERE user_id=?
             """, (
                 likes,
@@ -928,13 +983,16 @@ def like():
 # HOÀN THÀNH
 # =========================================================
 
-@app.route("/complete")
+@app.get("/complete")
 def complete():
 
     u = current_user()
 
     if not u:
-        return redirect(url_for("index"))
+
+        return redirect(
+            url_for("index")
+        )
 
     c = conn()
 
@@ -950,11 +1008,21 @@ def complete():
         or int(prog["likes"] or 0) < 10
     ):
 
-        return redirect(url_for("tasks"))
+        return redirect(
+            url_for("tasks")
+        )
+
+    # Chỉ hiện mã KQ một lần ngay sau khi hoàn thành.
+    # Mở trang xong thì quyền hiện mã tự mất.
+    show_result_code = session.pop(
+        "show_result_code",
+        False
+    )
 
     return render_template(
         "complete.html",
-        prog=prog
+        prog=prog,
+        show_result_code=show_result_code
     )
 
 
@@ -962,7 +1030,10 @@ def complete():
 # QUẢN TRỊ CSKH
 # =========================================================
 
-@app.route("/cskh", methods=["GET", "POST"])
+@app.route(
+    "/cskh",
+    methods=["GET", "POST"]
+)
 def cskh_admin():
 
     admin_password = os.environ.get(
@@ -970,7 +1041,6 @@ def cskh_admin():
         "2509"
     )
 
-    # Đăng nhập quản trị
     if (
         request.method == "POST"
         and request.form.get("action") == "login"
@@ -1062,8 +1132,7 @@ def cskh_admin():
                 url_for("cskh_admin")
             )
 
-        # CSKH cũng không thể cấp mã mới
-        # cho tài khoản đã hoàn thành hôm nay
+        # Không cấp mã mới nếu đã hoàn thành hôm nay
         if (
             customer["last_completed_date"]
             == today_vn()
@@ -1105,7 +1174,6 @@ def cskh_admin():
                         reward_name,
                         assigned_user_id
                     )
-
                     VALUES(?,?,?,?)
                 """, (
                     code,

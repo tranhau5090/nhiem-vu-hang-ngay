@@ -27,19 +27,8 @@
 {% endblock %}
 
 <script>
-function openSupport(){
-  try{
+function openSupport() {
     window.$crisp = window.$crisp || [];
-
-    // Gắn thông tin gói hiện tại vào phiên Crisp để CSKH đối chiếu.
-    $crisp.push(["set", "session:data", [[
-      ["goi_diem", "{{prog['package_name']}}"],
-      ["diem_thuong", "{{prog['reward_name']}}"]
-    ]]]);
-
-    $crisp.push(["do", "chat:open"]);
-  }catch(e){
-    alert("Khung chăm sóc khách hàng đang tải. Vui lòng thử lại sau vài giây.");
-  }
+    window.$crisp.push(["do", "chat:open"]);
 }
 </script>

@@ -37,6 +37,8 @@ def init_db():
         access_cols=[r[1] for r in c.execute("PRAGMA table_info(access_codes)").fetchall()]
         if "assigned_user_id" not in access_cols: c.execute("ALTER TABLE access_codes ADD COLUMN assigned_user_id INTEGER")
         if "expires_at" not in access_cols: c.execute("ALTER TABLE access_codes ADD COLUMN expires_at DATETIME")
+        if "used_by" not in access_cols: c.execute("ALTER TABLE access_codes ADD COLUMN used_by INTEGER")
+        if "used_at" not in access_cols: c.execute("ALTER TABLE access_codes ADD COLUMN used_at DATETIME")
         progress_cols=[r[1] for r in c.execute("PRAGMA table_info(progress)").fetchall()]
         if "last_completed_date" not in progress_cols: c.execute("ALTER TABLE progress ADD COLUMN last_completed_date TEXT")
         c.commit()

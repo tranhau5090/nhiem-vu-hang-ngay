@@ -1,25 +1,86 @@
+{% extends "base.html" %}
+{% block body %}
 
-{% extends "base.html" %}{% block body %}
 <div class="card">
-<div class="tabs">
-<button onclick="show('login')">Đăng nhập</button>
-<button onclick="show('register')">Đăng ký</button>
+  <div class="tabs">
+    <button onclick="show('login')">Đăng nhập</button>
+    <button onclick="show('register')">Đăng ký</button>
+  </div>
+
+  <div id="login">
+    <h2>Đăng nhập</h2>
+
+    <form method="post" action="/login">
+      <label>Số điện thoại</label>
+      <input name="phone" required>
+
+      <label>Mật khẩu</label>
+      <input name="password" type="password" required>
+
+      <button class="btn">Đăng nhập</button>
+    </form>
+  </div>
+
+  <div id="register" style="display:none">
+    <h2>Đăng ký</h2>
+
+    <form method="post" action="/register" onsubmit="return checkPassword()">
+      <label>Họ và tên</label>
+      <input name="name" required>
+
+      <label>Số điện thoại</label>
+      <input name="phone" required>
+
+      <label>Mật khẩu</label>
+      <input
+        id="register_password"
+        name="password"
+        type="password"
+        required
+      >
+
+      <label>Nhập lại mật khẩu</label>
+      <input
+        id="confirm_password"
+        name="confirm_password"
+        type="password"
+        required
+      >
+
+      <div id="password_error"
+           style="display:none;color:#dc2626;margin-top:8px">
+        Mật khẩu nhập lại không khớp.
+      </div>
+
+      <button class="btn">Đăng ký</button>
+    </form>
+  </div>
 </div>
-<div id="login">
-<h2>Đăng nhập</h2>
-<form method="post" action="/login">
-<label>Số điện thoại</label><input name="phone" required>
-<label>Mật khẩu</label><input name="password" type="password" required>
-<button class="btn">Đăng nhập</button>
-</form></div>
-<div id="register" style="display:none">
-<h2>Đăng ký</h2>
-<form method="post" action="/register">
-<label>Họ và tên</label><input name="name" required>
-<label>Số điện thoại</label><input name="phone" required>
-<label>Mật khẩu</label><input name="password" type="password" required>
-<button class="btn">Đăng ký</button>
-</form></div>
-</div>
-<script>function show(x){document.getElementById('login').style.display=x==='login'?'block':'none';document.getElementById('register').style.display=x==='register'?'block':'none'}</script>
+
+<script>
+function show(x) {
+  document.getElementById('login').style.display =
+    x === 'login' ? 'block' : 'none';
+
+  document.getElementById('register').style.display =
+    x === 'register' ? 'block' : 'none';
+}
+
+function checkPassword() {
+  const password =
+    document.getElementById('register_password').value;
+
+  const confirmPassword =
+    document.getElementById('confirm_password').value;
+
+  if (password !== confirmPassword) {
+    document.getElementById('password_error').style.display = 'block';
+    return false;
+  }
+
+  document.getElementById('password_error').style.display = 'none';
+  return true;
+}
+</script>
+
 {% endblock %}

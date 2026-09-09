@@ -1,98 +1,64 @@
 {% extends "base.html" %}{% block body %}
+{% set product_images = [
+  'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=800&q=80'
+] %}
+
 <div class="card">
   <h2>Thực hiện nhiệm vụ</h2>
-
-  <div style="font-weight:700;text-align:center">
-    <span id="count">{{prog['likes']}}</span>/10
-  </div>
-
-  <div class="progress">
-    <div id="bar" class="bar" style="width:{{prog['likes']*10}}%"></div>
-  </div>
+  <div style="font-weight:700;text-align:center"><span id="count">{{prog['likes']}}</span>/10</div>
+  <div class="progress"><div id="bar" class="bar" style="width:{{prog['likes']*10}}%"></div></div>
 
   <div id="tasks" style="display:grid;gap:14px;margin-top:16px">
     {% for p in products %}
     {% set task_id = loop.index %}
-
     <div class="task" style="display:block;padding:0;overflow:hidden;border:1px solid #e5e7eb;border-radius:16px;background:#fff">
-      <img
-        src="{{ p[2] }}"
-        alt="{{ p[0] }}"
-        loading="lazy"
-        style="width:100%;height:190px;object-fit:cover;display:block;background:#f3f4f6"
-      >
-
+      <img src="{{ product_images[loop.index0] }}" alt="{{ p[0] }}" loading="lazy" style="width:100%;height:190px;object-fit:cover;display:block;background:#f3f4f6">
       <div style="padding:14px">
-        <div style="font-size:17px;font-weight:800;margin-bottom:4px">
-          {{ p[0] }}
-        </div>
-
-        <div class="small" style="margin-bottom:12px">
-          {{ p[1] }}
-        </div>
-
-        <button
-          class="like"
-          data-task-id="{{task_id}}"
-          onclick="likeOne(this)"
-          style="width:100%"
-          {% if task_id in done_ids %}disabled{% endif %}
-        >{% if task_id in done_ids %}♥ Đã Like{% else %}♡ Like +2{% endif %}</button>
+        <div style="font-size:17px;font-weight:800;margin-bottom:4px">{{p[0]}}</div>
+        <div class="small" style="margin-bottom:12px">{{p[1]}}</div>
+        <button class="like" data-task-id="{{task_id}}" onclick="likeOne(this)" style="width:100%" {% if task_id in done_ids %}disabled{% endif %}>{% if task_id in done_ids %}♥ Đã Like{% else %}♡ Like +2{% endif %}</button>
       </div>
     </div>
     {% endfor %}
   </div>
 
-  <a
-    id="complete"
-    class="btn"
-    href="/complete"
-    style="margin-top:16px;{% if prog['likes']<10 %}display:none{% endif %}"
-  >Hoàn thành 10/10</a>
+  <a id="complete" class="btn" href="/complete" style="margin-top:16px;{% if prog['likes']<10 %}display:none{% endif %}">Hoàn thành 10/10</a>
 </div>
 
 <script>
 async function likeOne(btn){
   if(btn.disabled) return;
-
   const taskId = Number(btn.dataset.taskId);
   btn.disabled = true;
-
   try{
-    const r = await fetch('/like',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({task_id:taskId})
-    });
-
+    const r = await fetch('/like',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task_id:taskId})});
     const d = await r.json();
-
     if(d.ok){
       btn.textContent='♥ Đã Like';
       document.getElementById('count').textContent=d.likes;
       document.getElementById('bar').style.width=(d.likes*10)+'%';
-
-      if(d.likes>=10){
-        document.getElementById('complete').style.display='block';
-      }
-
+      if(d.likes>=10) document.getElementById('complete').style.display='block';
       return;
     }
-
     if(d.already_done){
       btn.textContent='♥ Đã Like';
-
       if(typeof d.likes !== 'undefined'){
         document.getElementById('count').textContent=d.likes;
         document.getElementById('bar').style.width=(d.likes*10)+'%';
       }
-
       return;
     }
-
     btn.disabled=false;
     alert(d.message || 'Không thể hoàn thành nhiệm vụ.');
-
   }catch(e){
     btn.disabled=false;
     alert('Không kết nối được máy chủ. Vui lòng thử lại.');

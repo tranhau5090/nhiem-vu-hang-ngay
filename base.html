@@ -1,6 +1,6 @@
 <!doctype html><html lang="vi"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Nhiệm vụ mỗi ngày</title>
+<title>DAILY REWARDS</title>
 <style>
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;overflow-x:hidden}
@@ -16,13 +16,14 @@ input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;margin
 .task{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin:9px 0}.like{border:0;border-radius:10px;padding:9px 12px;background:#eff6ff;color:#1d4ed8;font-weight:700}
 .progress{height:12px;background:#e5e7eb;border-radius:999px;overflow:hidden}.bar{height:100%;background:#2563eb}
 .small{font-size:12px;color:#6b7280}.top{width:100%;max-width:760px;display:flex;justify-content:space-between;align-items:center;margin:0 auto 8px}
+.brand-mini{display:flex;align-items:center;gap:9px}.brand-mini-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#f8e7a8,#c9952e);display:flex;align-items:flex-end;justify-content:center;padding:7px;gap:2px}.brand-mini-mark span{display:block;width:4px;background:#0f172a;border-radius:1px 1px 0 0}.brand-mini-mark span:nth-child(1){height:9px}.brand-mini-mark span:nth-child(2){height:14px}.brand-mini-mark span:nth-child(3){height:20px}.brand-mini-mark span:nth-child(4){height:15px}.brand-mini-mark span:nth-child(5){height:10px}.brand-mini-text{font-size:20px;font-weight:900;letter-spacing:.7px;color:#0f172a}
 button,input,a{-webkit-tap-highlight-color:transparent}
 img{max-width:100%;height:auto}
 @media (min-width:768px){.card{padding:24px}.grid{grid-template-columns:repeat(3,1fr)}.task{padding:15px}.btn{max-width:420px;margin-left:auto;margin-right:auto}}
-@media (max-width:767px){.wrap{padding:12px}.top{align-items:flex-start;gap:8px}.top h1{font-size:22px;margin-bottom:6px}.card{padding:16px;border-radius:16px;margin:10px auto}.grid{grid-template-columns:1fr 1fr;gap:8px}.pkg{padding:12px 8px}.task{padding:11px;align-items:center}.task b{font-size:14px}.like{white-space:nowrap}}
-@media (max-width:390px){.wrap{padding:9px}.grid{grid-template-columns:1fr}.tabs{grid-template-columns:1fr 1fr}.task{gap:7px}.like{padding:8px 9px}}
+@media (max-width:767px){.wrap{padding:12px}.top{align-items:flex-start;gap:8px}.brand-mini-text{font-size:18px}.card{padding:16px;border-radius:16px;margin:10px auto}.grid{grid-template-columns:1fr 1fr;gap:8px}.pkg{padding:12px 8px}.task{padding:11px;align-items:center}.task b{font-size:14px}.like{white-space:nowrap}}
+@media (max-width:390px){.wrap{padding:9px}.grid{grid-template-columns:1fr}.tabs{grid-template-columns:1fr 1fr}.task{gap:7px}.like{padding:8px 9px}.brand-mini-text{font-size:16px}}
 </style></head><body><div class="wrap">
-<div class="top"><h1>Nhiệm vụ mỗi ngày</h1>{% if session.get('uid') %}<a href="/logout">Đăng xuất</a>{% endif %}</div>
+<div class="top"><div class="brand-mini"><div class="brand-mini-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div><div class="brand-mini-text">DAILY REWARDS</div></div>{% if session.get('uid') %}<a href="/logout">Đăng xuất</a>{% endif %}</div>
 {% with messages=get_flashed_messages(with_categories=true) %}{% for cat,msg in messages %}<div class="msg {{cat}}">{{msg}}</div>{% endfor %}{% endwith %}
 {% block body %}{% endblock %}
 </div>

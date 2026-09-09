@@ -1,82 +1,26 @@
 {% extends "base.html" %}
 {% block body %}
 <style>
-.auth-shell{max-width:720px;margin:0 auto}.brand-panel{text-align:center;padding:24px 16px 18px;background:linear-gradient(145deg,#0f172a,#172554);border-radius:20px 20px 0 0;color:#fff}.brand-mark{width:78px;height:78px;margin:0 auto 12px;border-radius:22px;background:linear-gradient(145deg,#f8e7a8,#c9952e);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 28px rgba(0,0,0,.22)}.building{display:flex;align-items:flex-end;gap:3px;height:48px}.building span{display:block;width:8px;background:#0f172a;border-radius:2px 2px 0 0}.building span:nth-child(1){height:20px}.building span:nth-child(2){height:31px}.building span:nth-child(3){height:46px}.building span:nth-child(4){height:35px}.building span:nth-child(5){height:24px}.brand-title{font-size:26px;font-weight:900;letter-spacing:.2px}.brand-sub{font-size:14px;color:#dbeafe;margin-top:6px;line-height:1.5}.auth-card{border-radius:0 0 20px 20px;margin-top:0;border-top:0;box-shadow:0 14px 40px rgba(15,23,42,.10)}.office{margin:0 0 18px;padding:13px 14px;border:1px solid #e5e7eb;border-radius:13px;background:#f8fafc;display:flex;gap:10px;align-items:flex-start}.office-icon{font-size:20px;line-height:1}.office-title{font-weight:800;margin-bottom:3px}.office-text{font-size:13px;line-height:1.55;color:#475569}.trust-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0 4px}.trust-item{padding:10px;border-radius:12px;background:#f8fafc;text-align:center;font-size:12px;color:#475569}.trust-item b{display:block;color:#0f172a;margin-bottom:3px}.auth-tabs button{cursor:pointer}.auth-note{text-align:center;font-size:12px;color:#64748b;line-height:1.5;margin-top:16px}@media(max-width:600px){.brand-panel{padding:20px 13px 16px}.brand-mark{width:68px;height:68px}.brand-title{font-size:23px}.trust-row{grid-template-columns:1fr}}
+.auth-shell{max-width:720px;margin:0 auto}.brand-panel{text-align:center;padding:24px 16px 18px;background:linear-gradient(145deg,#0f172a,#172554);border-radius:20px 20px 0 0;color:#fff}.brand-mark{width:78px;height:78px;margin:0 auto 12px;border-radius:22px;background:linear-gradient(145deg,#f8e7a8,#c9952e);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 28px rgba(0,0,0,.22)}.building{display:flex;align-items:flex-end;gap:3px;height:48px}.building span{display:block;width:8px;background:#0f172a;border-radius:2px 2px 0 0}.building span:nth-child(1){height:20px}.building span:nth-child(2){height:31px}.building span:nth-child(3){height:46px}.building span:nth-child(4){height:35px}.building span:nth-child(5){height:24px}.brand-title{font-size:26px;font-weight:900;letter-spacing:1.2px}.brand-sub{font-size:14px;color:#dbeafe;margin-top:6px;line-height:1.5}.auth-card{border-radius:0 0 20px 20px;margin-top:0;border-top:0;box-shadow:0 14px 40px rgba(15,23,42,.10)}.office{margin:0 0 18px;padding:13px 14px;border:1px solid #e5e7eb;border-radius:13px;background:#f8fafc;display:flex;gap:10px;align-items:flex-start}.office-icon{font-size:20px;line-height:1}.office-title{font-weight:800;margin-bottom:3px}.office-text{font-size:13px;line-height:1.55;color:#475569}.trust-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0 4px}.trust-item{padding:10px;border-radius:12px;background:#f8fafc;text-align:center;font-size:12px;color:#475569}.trust-item b{display:block;color:#0f172a;margin-bottom:3px}.auth-tabs button{cursor:pointer}.auth-note{text-align:center;font-size:12px;color:#64748b;line-height:1.5;margin-top:16px}@media(max-width:600px){.brand-panel{padding:20px 13px 16px}.brand-mark{width:68px;height:68px}.brand-title{font-size:23px}.trust-row{grid-template-columns:1fr}}
 </style>
-
 <div class="auth-shell">
   <div class="brand-panel">
-    <div class="brand-mark" aria-hidden="true">
-      <div class="building"><span></span><span></span><span></span><span></span><span></span></div>
-    </div>
-    <div class="brand-title">NHIỆM VỤ MỖI NGÀY</div>
-    <div class="brand-sub">Hệ thống nhiệm vụ điểm · Đơn giản · Minh bạch · Dễ sử dụng</div>
+    <div class="brand-mark" aria-hidden="true"><div class="building"><span></span><span></span><span></span><span></span><span></span></div></div>
+    <div class="brand-title">DAILY REWARDS</div>
+    <div class="brand-sub">Hệ thống nhiệm vụ &amp; tích điểm mỗi ngày</div>
   </div>
-
   <div class="card auth-card">
-    <div class="office">
-      <div class="office-icon">⌖</div>
-      <div>
-        <div class="office-title">Địa điểm</div>
-        <div class="office-text">Tầng 1 - 2 Landmark 81<br>Số 720A Điện Biên Phủ, <b>phường Thạnh Mỹ Tây</b>, Thành phố Hồ Chí Minh.</div>
-      </div>
-    </div>
-
-    <div class="tabs auth-tabs">
-      <button type="button" id="loginTab" onclick="show('login')">Đăng nhập</button>
-      <button type="button" id="registerTab" onclick="show('register')">Đăng ký</button>
-    </div>
-
-    <div id="login">
-      <h2 style="margin-top:20px">Đăng nhập tài khoản</h2>
-      <form method="post" action="/login">
-        <label>Số điện thoại</label>
-        <input name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Nhập số điện thoại" required>
-        <label>Mật khẩu</label>
-        <input name="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required>
-        <button class="btn">Đăng nhập</button>
-      </form>
-    </div>
-
-    <div id="register" style="display:none">
-      <h2 style="margin-top:20px">Tạo tài khoản</h2>
-      <form method="post" action="/register" onsubmit="return checkPassword()">
-        <label>Họ và tên</label>
-        <input name="name" autocomplete="name" placeholder="Nhập họ và tên" required>
-        <label>Số điện thoại</label>
-        <input name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Nhập số điện thoại" required>
-        <label>Mật khẩu</label>
-        <input id="register_password" name="password" type="password" autocomplete="new-password" minlength="6" placeholder="Tối thiểu 6 ký tự" required>
-        <label>Nhập lại mật khẩu</label>
-        <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" minlength="6" placeholder="Nhập lại mật khẩu" required>
-        <div id="password_error" style="display:none;color:#dc2626;margin-top:8px">Mật khẩu nhập lại không khớp.</div>
-        <button class="btn">Đăng ký</button>
-      </form>
-    </div>
-
-    <div class="trust-row">
-      <div class="trust-item"><b>10 nhiệm vụ mỗi lượt</b>Tiến độ được hiển thị trực tiếp trong tài khoản.</div>
-      <div class="trust-item"><b>Chăm sóc khách hàng</b>Hỗ trợ trực tiếp khi cần hướng dẫn sử dụng.</div>
-    </div>
+    <div class="office"><div class="office-icon">⌖</div><div><div class="office-title">Địa điểm</div><div class="office-text">Tầng 1 - 2 Landmark 81<br>Số 720A Điện Biên Phủ, <b>phường Thạnh Mỹ Tây</b>, Thành phố Hồ Chí Minh.</div></div></div>
+    <div class="tabs auth-tabs"><button type="button" id="loginTab" onclick="show('login')">Đăng nhập</button><button type="button" id="registerTab" onclick="show('register')">Đăng ký</button></div>
+    <div id="login"><h2 style="margin-top:20px">Đăng nhập tài khoản</h2><form method="post" action="/login"><label>Số điện thoại</label><input name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Nhập số điện thoại" required><label>Mật khẩu</label><input name="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required><button class="btn">Đăng nhập</button></form></div>
+    <div id="register" style="display:none"><h2 style="margin-top:20px">Tạo tài khoản</h2><form method="post" action="/register" onsubmit="return checkPassword()"><label>Họ và tên</label><input name="name" autocomplete="name" placeholder="Nhập họ và tên" required><label>Số điện thoại</label><input name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Nhập số điện thoại" required><label>Mật khẩu</label><input id="register_password" name="password" type="password" autocomplete="new-password" minlength="6" placeholder="Tối thiểu 6 ký tự" required><label>Nhập lại mật khẩu</label><input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" minlength="6" placeholder="Nhập lại mật khẩu" required><div id="password_error" style="display:none;color:#dc2626;margin-top:8px">Mật khẩu nhập lại không khớp.</div><button class="btn">Đăng ký</button></form></div>
+    <div class="trust-row"><div class="trust-item"><b>10 nhiệm vụ mỗi lượt</b>Tiến độ được hiển thị trực tiếp trong tài khoản.</div><div class="trust-item"><b>Chăm sóc khách hàng</b>Hỗ trợ trực tiếp khi cần hướng dẫn sử dụng.</div></div>
     <div class="auth-note">Điểm hiển thị trên website là điểm trong hệ thống nhiệm vụ.</div>
   </div>
 </div>
-
 <script>
-function show(x){
-  document.getElementById('login').style.display=x==='login'?'block':'none';
-  document.getElementById('register').style.display=x==='register'?'block':'none';
-  document.getElementById('loginTab').style.background=x==='login'?'#2563eb':'#eef2ff';
-  document.getElementById('loginTab').style.color=x==='login'?'#fff':'#1d4ed8';
-  document.getElementById('registerTab').style.background=x==='register'?'#2563eb':'#eef2ff';
-  document.getElementById('registerTab').style.color=x==='register'?'#fff':'#1d4ed8';
-}
-function checkPassword(){
-  const password=document.getElementById('register_password').value;
-  const confirmPassword=document.getElementById('confirm_password').value;
-  if(password!==confirmPassword){document.getElementById('password_error').style.display='block';return false;}
-  document.getElementById('password_error').style.display='none';return true;
-}
+function show(x){document.getElementById('login').style.display=x==='login'?'block':'none';document.getElementById('register').style.display=x==='register'?'block':'none';document.getElementById('loginTab').style.background=x==='login'?'#2563eb':'#eef2ff';document.getElementById('loginTab').style.color=x==='login'?'#fff':'#1d4ed8';document.getElementById('registerTab').style.background=x==='register'?'#2563eb':'#eef2ff';document.getElementById('registerTab').style.color=x==='register'?'#fff':'#1d4ed8';}
+function checkPassword(){const password=document.getElementById('register_password').value;const confirmPassword=document.getElementById('confirm_password').value;if(password!==confirmPassword){document.getElementById('password_error').style.display='block';return false;}document.getElementById('password_error').style.display='none';return true;}
 show('login');
 </script>
 {% endblock %}

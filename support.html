@@ -29,6 +29,25 @@
 <script>
 function openSupport() {
     window.$crisp = window.$crisp || [];
+
+    const goi = {{ prog['package_name'] | tojson }};
+    const thuong = {{ prog['reward_name'] | tojson }};
+
+    window.$crisp.push([
+        "set",
+        "session:data",
+        [[
+            ["goi_diem", goi],
+            ["diem_thuong", thuong]
+        ]]
+    ]);
+
     window.$crisp.push(["do", "chat:open"]);
+
+    window.$crisp.push([
+        "do",
+        "message:send",
+        ["text", "Xin chào CSKH, tôi cần hỗ trợ gói " + goi + " - điểm thưởng " + thuong + "."]
+    ]);
 }
 </script>

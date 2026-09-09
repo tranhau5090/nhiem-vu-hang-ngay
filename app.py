@@ -443,6 +443,8 @@ def cskh_logout():
     session.pop("cskh_admin", None)
     return redirect(url_for("cskh_admin"))
 
+init_db()
+
 if __name__ == "__main__":
-    init_db()
     app.run(host="0.0.0.0", port=5000, debug=True)
+

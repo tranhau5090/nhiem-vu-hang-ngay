@@ -1,11 +1,62 @@
+{% extends "base.html" %}
+{% block body %}
 
-{% extends "base.html" %}{% block body %}
-<div class="card"><h2>Liên hệ chăm sóc khách hàng</h2>
-<div class="msg success">✓ Bạn đã hoàn thành 10/10 nhiệm vụ.</div>
-<div style="text-align:center;border:1px solid #e5e7eb;border-radius:14px;padding:14px">
-<div class="small">Mã hoàn thành của bạn</div><div id="code" style="font-size:26px;font-weight:800;letter-spacing:2px">{{prog['result_code']}}</div>
-<button class="btn secondary" onclick="navigator.clipboard.writeText(document.getElementById('code').innerText)">Sao chép mã</button>
+<div class="card">
+  <h2>Hoàn thành nhiệm vụ</h2>
+
+  <div class="msg success">
+    ✓ Bạn đã hoàn thành 10/10 nhiệm vụ.
+  </div>
+
+  <div style="text-align:center;border:1px solid #e5e7eb;border-radius:14px;padding:14px">
+    <div class="small">Mã hoàn thành của bạn</div>
+
+    <div id="code" style="font-size:26px;font-weight:800;letter-spacing:2px">
+      {{ prog['result_code'] }}
+    </div>
+
+    <button
+      class="btn secondary"
+      type="button"
+      onclick="copyCode()">
+      Sao chép mã
+    </button>
+  </div>
+
+  <p>
+    Nhấn nút bên dưới để gửi mã hoàn thành trực tiếp cho chăm sóc khách hàng.
+  </p>
+
+  <button
+    class="btn"
+    type="button"
+    onclick="sendToSupport()">
+    Gửi mã cho chăm sóc khách hàng
+  </button>
 </div>
-<p>Gửi mã này cho chăm sóc khách hàng để xác nhận hoàn thành.</p>
-<button class="btn" onclick="if(window.Tawk_API) Tawk_API.maximize()">Nhắn chăm sóc khách hàng</button>
-</div>{% endblock %}
+
+<script>
+function copyCode() {
+    const code = document.getElementById("code").innerText.trim();
+    navigator.clipboard.writeText(code);
+}
+
+function sendToSupport() {
+    window.$crisp = window.$crisp || [];
+
+    const code = document.getElementById("code").innerText.trim();
+
+    window.$crisp.push(["do", "chat:open"]);
+
+    window.$crisp.push([
+        "do",
+        "message:send",
+        [
+            "text",
+            "Tôi đã hoàn thành 10/10 nhiệm vụ. Mã hoàn thành của tôi: " + code
+        ]
+    ]);
+}
+</script>
+
+{% endblock %}

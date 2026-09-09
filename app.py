@@ -4,9 +4,7 @@ import random
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-
 from werkzeug.security import generate_password_hash, check_password_hash
-
 
 app = Flask(__name__, template_folder=".")
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key")
@@ -38,12 +36,12 @@ PRODUCTS = [
 ]
 
 
-def conn():
-    c = sqlite3.connect(DB, timeout=20)
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA busy_timeout=20000")
-    c.execute("PRAGMA foreign_keys=ON")
-    return c
+def db():
+    connection = sqlite3.connect(DB, timeout=30)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA busy_timeout=30000")
+    connection.execute("PRAGMA foreign_keys=ON")
+    return connection
 
 
 def today_vn():
@@ -51,31 +49,25 @@ def today_vn():
 
 
 def utc_sql(dt=None):
-    dt = dt or datetime.now(timezone.utc)
-    return dt.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    value = dt or datetime.now(timezone.utc)
+    return value.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
 
-def ensure_column(c, table, column, definition):
-    cols = {row[1] for row in c.execute(f"PRAGMA table_info({table})").fetchall()}
-    if column in cols:
-        return
-    try:
-        c.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
-    except sqlite3.OperationalError as exc:
-        # An old database or another process may have added the column first.
-        if "duplicate column" not in str(exc).lower():
-            raise
+def add_column_if_missing(connection, table, column, definition):
+    columns = {row[1] for row in connection.execute(f"PRAGMA table_info({table})").fetchall()}
+    if column not in columns:
+        connection.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
 
 
 def init_db():
-    c = conn()
+    connection = db()
     try:
         try:
-            c.execute("PRAGMA journal_mode=WAL")
+            connection.execute("PRAGMA journal_mode=WAL")
         except sqlite3.DatabaseError:
             pass
 
-        c.executescript(
+        connection.executescript(
             """
             CREATE TABLE IF NOT EXISTS users(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -118,43 +110,92 @@ def init_db():
             """
         )
 
-        ensure_column(c, "access_codes", "assigned_user_id", "INTEGER")
-        ensure_column(c, "access_codes", "expires_at", "DATETIME")
-        ensure_column(c, "access_codes", "used_by", "INTEGER")
-        ensure_column(c, "access_codes", "used_at", "DATETIME")
-        ensure_column(c, "progress", "last_completed_date", "TEXT")
-        c.commit()
+        # Tương thích với database cũ đã tồn tại từ các phiên bản trước.
+        migrations = [
+            ("progress", "package_name", "TEXT"),
+            ("progress", "reward_name", "TEXT"),
+            ("progress", "access_code", "TEXT"),
+            ("progress", "likes", "INTEGER DEFAULT 0"),
+            ("progress", "result_code", "TEXT"),
+            ("progress", "last_completed_date", "TEXT"),
+            ("access_codes", "package_name", "TEXT"),
+            ("access_codes", "reward_name", "TEXT"),
+            ("access_codes", "used", "INTEGER DEFAULT 0"),
+            ("access_codes", "assigned_user_id", "INTEGER"),
+            ("access_codes", "used_by", "INTEGER"),
+            ("access_codes", "created_at", "DATETIME"),
+            ("access_codes", "expires_at", "DATETIME"),
+            ("access_codes", "used_at", "DATETIME"),
+        ]
+        for table, column, definition in migrations:
+            try:
+                add_column_if_missing(connection, table, column, definition)
+            except sqlite3.OperationalError as exc:
+                if "duplicate column" not in str(exc).lower():
+                    raise
+
+        connection.commit()
     finally:
-        c.close()
+        connection.close()
 
 
 def current_user():
-    uid = session.get("uid")
-    if not uid:
+    user_id = session.get("uid")
+    if not user_id:
         return None
-    c = conn()
+    connection = db()
     try:
-        return c.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone()
+        return connection.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
     finally:
-        c.close()
+        connection.close()
 
 
 def get_progress(user_id):
-    c = conn()
+    connection = db()
     try:
-        return c.execute("SELECT * FROM progress WHERE user_id=?", (user_id,)).fetchone()
+        return connection.execute("SELECT * FROM progress WHERE user_id=?", (user_id,)).fetchone()
     finally:
-        c.close()
+        connection.close()
 
 
 def completed_today(user_id):
-    prog = get_progress(user_id)
-    return bool(prog and prog["last_completed_date"] == today_vn())
+    progress = get_progress(user_id)
+    return bool(progress and progress["last_completed_date"] == today_vn())
 
 
 def make_code(prefix):
     chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
     return prefix + "-" + "".join(random.choice(chars) for _ in range(6))
+
+
+def code_is_expired(value):
+    if not value:
+        return True
+    try:
+        expires = datetime.strptime(str(value), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+        return datetime.now(timezone.utc) >= expires
+    except (TypeError, ValueError):
+        return True
+
+
+@app.errorhandler(500)
+def handle_server_error(error):
+    app.logger.exception("Unhandled server error: %s", error)
+    flash("Hệ thống vừa gặp lỗi. Vui lòng thử lại sau vài giây.", "error")
+    if session.get("uid"):
+        return redirect(url_for("packages"))
+    return redirect(url_for("index"))
+
+
+@app.get("/health")
+def health():
+    try:
+        connection = db()
+        connection.execute("SELECT 1").fetchone()
+        connection.close()
+        return jsonify({"ok": True})
+    except Exception:
+        return jsonify({"ok": False}), 500
 
 
 @app.get("/")
@@ -196,22 +237,22 @@ def register():
         flash("Mật khẩu nhập lại không khớp.", "error")
         return redirect(url_for("index"))
 
-    c = conn()
+    connection = db()
     try:
-        c.execute(
+        connection.execute(
             "INSERT INTO users(name, phone, password_hash) VALUES(?,?,?)",
             (name, phone, generate_password_hash(password)),
         )
-        c.commit()
+        connection.commit()
         flash("Bạn đã đăng ký thành công!", "success")
     except sqlite3.IntegrityError:
-        c.rollback()
+        connection.rollback()
         flash("Số điện thoại này đã được đăng ký.", "error")
     except sqlite3.Error:
-        c.rollback()
+        connection.rollback()
         flash("Hệ thống đang bận. Vui lòng thử lại.", "error")
     finally:
-        c.close()
+        connection.close()
     return redirect(url_for("index"))
 
 
@@ -219,18 +260,18 @@ def register():
 def login():
     phone = request.form.get("phone", "").strip()
     password = request.form.get("password", "")
-    c = conn()
+    connection = db()
     try:
-        u = c.execute("SELECT * FROM users WHERE phone=?", (phone,)).fetchone()
+        user = connection.execute("SELECT * FROM users WHERE phone=?", (phone,)).fetchone()
     finally:
-        c.close()
+        connection.close()
 
-    if not u or not check_password_hash(u["password_hash"], password):
+    if not user or not check_password_hash(user["password_hash"], password):
         flash("Thông tin đăng nhập sai.", "error")
         return redirect(url_for("index"))
 
-    session["uid"] = u["id"]
-    if completed_today(u["id"]):
+    session["uid"] = user["id"]
+    if completed_today(user["id"]):
         session.pop("show_result_code", None)
         return redirect(url_for("complete"))
     return redirect(url_for("packages"))
@@ -244,225 +285,176 @@ def logout():
 
 @app.get("/packages")
 def packages():
-    u = current_user()
-    if not u:
+    user = current_user()
+    if not user:
         return redirect(url_for("index"))
-    if completed_today(u["id"]):
+    if completed_today(user["id"]):
         session.pop("show_result_code", None)
         return redirect(url_for("complete"))
-    return render_template("packages.html", packages=PACKAGES, user=u)
+    return render_template("packages.html", packages=PACKAGES, user=user)
 
 
 @app.post("/choose-package")
 def choose_package():
-    u = current_user()
-    if not u:
+    user = current_user()
+    if not user:
         return redirect(url_for("index"))
-    if completed_today(u["id"]):
-        session.pop("show_result_code", None)
+    if completed_today(user["id"]):
         return redirect(url_for("complete"))
 
     try:
-        idx = int(request.form.get("package_idx", "-1"))
+        package_index = int(request.form.get("package_idx", "-1"))
     except (TypeError, ValueError):
-        idx = -1
+        package_index = -1
 
-    if idx < 0 or idx >= len(PACKAGES):
+    if package_index < 0 or package_index >= len(PACKAGES):
         flash("Gói điểm không hợp lệ.", "error")
         return redirect(url_for("packages"))
 
-    package_name, reward_name = PACKAGES[idx]
-    c = conn()
+    package_name, reward_name = PACKAGES[package_index]
+    connection = db()
     try:
-        c.execute(
-            """
-            INSERT INTO progress(user_id,package_name,reward_name,access_code,likes,result_code)
-            VALUES(?,?,?,NULL,0,NULL)
-            ON CONFLICT(user_id) DO UPDATE SET
-                package_name=excluded.package_name,
-                reward_name=excluded.reward_name,
-                access_code=NULL,
-                likes=0,
-                result_code=NULL
-            """,
-            (u["id"], package_name, reward_name),
-        )
-        c.execute("DELETE FROM task_completions WHERE user_id=?", (u["id"],))
-        c.commit()
+        existing = connection.execute("SELECT user_id FROM progress WHERE user_id=?", (user["id"],)).fetchone()
+        if existing:
+            connection.execute(
+                "UPDATE progress SET package_name=?,reward_name=?,access_code=NULL,likes=0,result_code=NULL WHERE user_id=?",
+                (package_name, reward_name, user["id"]),
+            )
+        else:
+            connection.execute(
+                "INSERT INTO progress(user_id,package_name,reward_name,access_code,likes,result_code,last_completed_date) VALUES(?,?,?,NULL,0,NULL,NULL)",
+                (user["id"], package_name, reward_name),
+            )
+        connection.execute("DELETE FROM task_completions WHERE user_id=?", (user["id"],))
+        connection.commit()
     except sqlite3.Error:
-        c.rollback()
+        connection.rollback()
         flash("Không thể lưu gói lúc này. Vui lòng thử lại.", "error")
         return redirect(url_for("packages"))
     finally:
-        c.close()
+        connection.close()
 
     return redirect(url_for("support"))
 
 
 @app.route("/support", methods=["GET", "POST"])
 def support():
-    u = current_user()
-    if not u:
+    user = current_user()
+    if not user:
         return redirect(url_for("index"))
-    if completed_today(u["id"]):
-        session.pop("show_result_code", None)
+    if completed_today(user["id"]):
         return redirect(url_for("complete"))
 
-    c = conn()
-    try:
-        prog = c.execute("SELECT * FROM progress WHERE user_id=?", (u["id"],)).fetchone()
-    finally:
-        c.close()
-
-    if not prog:
+    progress = get_progress(user["id"])
+    if not progress or not progress["package_name"]:
         return redirect(url_for("packages"))
+
     if request.method == "GET":
-        return render_template("support.html", prog=prog)
+        return render_template("support.html", prog=progress)
 
     code = request.form.get("code", "").strip().upper()
     if not code:
         flash("Vui lòng nhập mã.", "error")
         return redirect(url_for("support"))
 
-    c = conn()
+    connection = db()
     try:
-        # Begin a write transaction so the same code cannot be accepted twice.
-        c.execute("BEGIN IMMEDIATE")
-        row = c.execute("SELECT * FROM access_codes WHERE code=?", (code,)).fetchone()
-
+        row = connection.execute("SELECT * FROM access_codes WHERE code=?", (code,)).fetchone()
         if not row:
-            c.rollback()
             flash("Mã không hợp lệ.", "error")
             return redirect(url_for("support"))
-
         if int(row["used"] or 0) == 1:
-            c.rollback()
             flash("Mã này đã được sử dụng.", "error")
             return redirect(url_for("support"))
-
-        if row["assigned_user_id"] is not None and int(row["assigned_user_id"]) != int(u["id"]):
-            c.rollback()
+        if row["assigned_user_id"] is not None and int(row["assigned_user_id"]) != int(user["id"]):
             flash("Mã này được cấp cho tài khoản khác.", "error")
             return redirect(url_for("support"))
-
-        if row["package_name"] != prog["package_name"]:
-            c.rollback()
+        if row["package_name"] != progress["package_name"]:
             flash("Mã không đúng với gói điểm bạn đã chọn.", "error")
             return redirect(url_for("support"))
-
-        if not row["expires_at"]:
-            c.rollback()
+        if code_is_expired(row["expires_at"]):
             flash("Mã đã hết hạn. Vui lòng liên hệ Chăm sóc khách hàng để nhận mã mới.", "error")
             return redirect(url_for("support"))
 
-        valid = c.execute(
-            "SELECT CASE WHEN datetime(?) > CURRENT_TIMESTAMP THEN 1 ELSE 0 END AS ok",
-            (row["expires_at"],),
-        ).fetchone()["ok"]
-        if not valid:
-            c.rollback()
-            flash("Mã đã hết hạn. Vui lòng liên hệ Chăm sóc khách hàng để nhận mã mới.", "error")
-            return redirect(url_for("support"))
-
-        updated = c.execute(
-            """
-            UPDATE access_codes
-            SET used=1, used_by=?, used_at=CURRENT_TIMESTAMP
-            WHERE id=? AND used=0
-            """,
-            (u["id"], row["id"]),
+        cursor = connection.execute(
+            "UPDATE access_codes SET used=1,used_by=?,used_at=? WHERE id=? AND used=0",
+            (user["id"], utc_sql(), row["id"]),
         )
-        if updated.rowcount != 1:
-            c.rollback()
+        if cursor.rowcount != 1:
+            connection.rollback()
             flash("Mã vừa được sử dụng hoặc không còn hiệu lực. Vui lòng nhận mã mới.", "error")
             return redirect(url_for("support"))
 
-        c.execute(
+        connection.execute(
             "UPDATE progress SET access_code=?,likes=0,result_code=NULL WHERE user_id=?",
-            (code, u["id"]),
+            (code, user["id"]),
         )
-        c.execute("DELETE FROM task_completions WHERE user_id=?", (u["id"],))
-        c.commit()
-
-    except sqlite3.Error:
-        try:
-            c.rollback()
-        except sqlite3.Error:
-            pass
-        flash("Hệ thống đang bận. Vui lòng thử nhập mã lại sau vài giây.", "error")
-        return redirect(url_for("support"))
-    except Exception:
-        try:
-            c.rollback()
-        except Exception:
-            pass
-        flash("Không thể xác nhận mã lúc này. Vui lòng thử lại hoặc nhận mã mới từ CSKH.", "error")
+        connection.execute("DELETE FROM task_completions WHERE user_id=?", (user["id"],))
+        connection.commit()
+    except sqlite3.Error as exc:
+        connection.rollback()
+        app.logger.exception("Code redemption database error: %s", exc)
+        flash("Không thể xác nhận mã lúc này. Vui lòng thử lại sau vài giây.", "error")
         return redirect(url_for("support"))
     finally:
-        c.close()
+        connection.close()
 
     return redirect(url_for("tasks"))
 
 
 @app.get("/tasks")
 def tasks():
-    u = current_user()
-    if not u:
+    user = current_user()
+    if not user:
         return redirect(url_for("index"))
-    if completed_today(u["id"]):
+    if completed_today(user["id"]):
         return redirect(url_for("complete"))
 
-    done_ids = set()
-    prog = None
-    c = conn()
+    connection = db()
     try:
-        prog = c.execute("SELECT * FROM progress WHERE user_id=?", (u["id"],)).fetchone()
-        if not prog or not prog["access_code"]:
+        progress = connection.execute("SELECT * FROM progress WHERE user_id=?", (user["id"],)).fetchone()
+        if not progress or not progress["access_code"]:
+            flash("Bạn cần nhập mã hợp lệ trước khi làm nhiệm vụ.", "error")
             return redirect(url_for("support"))
 
-        done_rows = c.execute(
+        completed_rows = connection.execute(
             "SELECT task_id FROM task_completions WHERE user_id=? ORDER BY task_id",
-            (u["id"],),
+            (user["id"],),
         ).fetchall()
-        done_ids = {int(r["task_id"]) for r in done_rows}
+        done_ids = {int(row["task_id"]) for row in completed_rows}
         likes = min(len(done_ids), 10)
-        result_code = prog["result_code"]
+
+        if int(progress["likes"] or 0) != likes:
+            connection.execute("UPDATE progress SET likes=? WHERE user_id=?", (likes, user["id"]))
+            connection.commit()
+            progress = connection.execute("SELECT * FROM progress WHERE user_id=?", (user["id"],)).fetchone()
 
         if likes >= 10:
-            if not result_code:
-                result_code = make_code("KQ")
-            c.execute(
+            result_code = progress["result_code"] or make_code("KQ")
+            connection.execute(
                 "UPDATE progress SET likes=10,result_code=?,last_completed_date=? WHERE user_id=?",
-                (result_code, today_vn(), u["id"]),
+                (result_code, today_vn(), user["id"]),
             )
-            c.commit()
+            connection.commit()
             session["show_result_code"] = True
             return redirect(url_for("complete"))
 
-        c.execute("UPDATE progress SET likes=? WHERE user_id=?", (likes, u["id"]))
-        c.commit()
-        prog = c.execute("SELECT * FROM progress WHERE user_id=?", (u["id"],)).fetchone()
-    except sqlite3.Error:
-        c.rollback()
+        return render_template("tasks.html", products=PRODUCTS, prog=progress, done_ids=done_ids)
+    except sqlite3.Error as exc:
+        app.logger.exception("Tasks database error: %s", exc)
         flash("Không tải được nhiệm vụ. Vui lòng thử lại.", "error")
         return redirect(url_for("support"))
     finally:
-        c.close()
-
-    return render_template("tasks.html", products=PRODUCTS, prog=prog, done_ids=done_ids)
+        connection.close()
 
 
 @app.post("/like")
 def like():
-    u = current_user()
-    if not u:
+    user = current_user()
+    if not user:
         return jsonify({"ok": False, "message": "Chưa đăng nhập."}), 401
-    if completed_today(u["id"]):
-        return jsonify({
-            "ok": False,
-            "daily_limit": True,
-            "message": "Bạn đã hoàn thành nhiệm vụ hôm nay. Vui lòng quay lại vào ngày mai.",
-        }), 403
+    if completed_today(user["id"]):
+        return jsonify({"ok": False, "daily_limit": True, "message": "Bạn đã hoàn thành nhiệm vụ hôm nay. Vui lòng quay lại vào ngày mai."}), 403
 
     data = request.get_json(silent=True) or {}
     try:
@@ -473,84 +465,63 @@ def like():
     if task_id < 1 or task_id > len(PRODUCTS):
         return jsonify({"ok": False, "message": "Nhiệm vụ không hợp lệ."}), 400
 
-    c = conn()
+    connection = db()
     try:
-        prog = c.execute("SELECT * FROM progress WHERE user_id=?", (u["id"],)).fetchone()
-        if not prog or not prog["access_code"]:
+        progress = connection.execute("SELECT * FROM progress WHERE user_id=?", (user["id"],)).fetchone()
+        if not progress or not progress["access_code"]:
             return jsonify({"ok": False, "message": "Bạn chưa được mở nhiệm vụ."}), 403
 
-        already = c.execute(
-            "SELECT 1 FROM task_completions WHERE user_id=? AND task_id=?",
-            (u["id"], task_id),
-        ).fetchone()
-        if already:
-            likes = c.execute(
-                "SELECT COUNT(*) AS n FROM task_completions WHERE user_id=?",
-                (u["id"],),
-            ).fetchone()["n"]
-            return jsonify({
-                "ok": False,
-                "already_done": True,
-                "likes": likes,
-                "message": "Nhiệm vụ này đã hoàn thành.",
-            }), 409
+        try:
+            connection.execute(
+                "INSERT INTO task_completions(user_id,task_id) VALUES(?,?)",
+                (user["id"], task_id),
+            )
+        except sqlite3.IntegrityError:
+            likes = connection.execute(
+                "SELECT COUNT(*) AS total FROM task_completions WHERE user_id=?",
+                (user["id"],),
+            ).fetchone()["total"]
+            return jsonify({"ok": False, "already_done": True, "likes": min(int(likes), 10), "message": "Nhiệm vụ này đã hoàn thành."}), 409
 
-        c.execute(
-            "INSERT INTO task_completions(user_id,task_id) VALUES(?,?)",
-            (u["id"], task_id),
-        )
-        likes = c.execute(
-            "SELECT COUNT(*) AS n FROM task_completions WHERE user_id=?",
-            (u["id"],),
-        ).fetchone()["n"]
-        result_code = prog["result_code"]
+        likes = connection.execute(
+            "SELECT COUNT(*) AS total FROM task_completions WHERE user_id=?",
+            (user["id"],),
+        ).fetchone()["total"]
+        likes = min(int(likes), 10)
 
+        result_code = progress["result_code"]
         if likes >= 10:
-            likes = 10
-            if not result_code:
-                result_code = make_code("KQ")
-            c.execute(
+            result_code = result_code or make_code("KQ")
+            connection.execute(
                 "UPDATE progress SET likes=10,result_code=?,last_completed_date=? WHERE user_id=?",
-                (result_code, today_vn(), u["id"]),
+                (result_code, today_vn(), user["id"]),
             )
             session["show_result_code"] = True
         else:
-            c.execute("UPDATE progress SET likes=? WHERE user_id=?", (likes, u["id"]))
+            connection.execute("UPDATE progress SET likes=? WHERE user_id=?", (likes, user["id"]))
 
-        c.commit()
-        return jsonify({
-            "ok": True,
-            "task_id": task_id,
-            "likes": likes,
-            "result_code": result_code,
-        })
-    except sqlite3.IntegrityError:
-        c.rollback()
-        return jsonify({"ok": False, "already_done": True, "message": "Nhiệm vụ này đã hoàn thành."}), 409
-    except sqlite3.Error:
-        c.rollback()
+        connection.commit()
+        return jsonify({"ok": True, "task_id": task_id, "likes": likes, "result_code": result_code})
+    except sqlite3.Error as exc:
+        connection.rollback()
+        app.logger.exception("Like database error: %s", exc)
         return jsonify({"ok": False, "message": "Máy chủ đang bận. Vui lòng thử lại."}), 503
     finally:
-        c.close()
+        connection.close()
 
 
 @app.get("/complete")
 def complete():
-    u = current_user()
-    if not u:
+    user = current_user()
+    if not user:
         return redirect(url_for("index"))
 
-    c = conn()
-    try:
-        prog = c.execute("SELECT * FROM progress WHERE user_id=?", (u["id"],)).fetchone()
-    finally:
-        c.close()
-
-    if not prog or int(prog["likes"] or 0) < 10:
+    progress = get_progress(user["id"])
+    if not progress or int(progress["likes"] or 0) < 10:
         return redirect(url_for("tasks"))
 
     show_result_code = session.pop("show_result_code", False)
-    return render_template("complete.html", prog=prog, show_result_code=show_result_code)
+    return render_template("complete.html", prog=progress, show_result_code=show_result_code)
 
 
 @app.route("/cskh", methods=["GET", "POST"])
@@ -573,12 +544,12 @@ def cskh_admin():
     if request.method == "POST" and request.form.get("action") == "generate":
         try:
             customer_id = int(request.form.get("customer_id", "0"))
-        except ValueError:
+        except (TypeError, ValueError):
             customer_id = 0
 
-        c = conn()
+        connection = db()
         try:
-            customer = c.execute(
+            customer = connection.execute(
                 """
                 SELECT u.id,u.name,u.phone,p.package_name,p.reward_name,p.last_completed_date
                 FROM users u JOIN progress p ON p.user_id=u.id
@@ -595,34 +566,33 @@ def cskh_admin():
                 return redirect(url_for("cskh_admin"))
 
             expires_at = utc_sql(datetime.now(timezone.utc) + timedelta(minutes=CODE_TTL_MINUTES))
-            for _ in range(20):
-                code = make_code("NV")
+            for _ in range(30):
+                new_code = make_code("NV")
                 try:
-                    c.execute(
-                        """
-                        INSERT INTO access_codes(code,package_name,reward_name,assigned_user_id,expires_at)
-                        VALUES(?,?,?,?,?)
-                        """,
-                        (code, customer["package_name"], customer["reward_name"], customer["id"], expires_at),
+                    connection.execute(
+                        "INSERT INTO access_codes(code,package_name,reward_name,assigned_user_id,expires_at) VALUES(?,?,?,?,?)",
+                        (new_code, customer["package_name"], customer["reward_name"], customer["id"], expires_at),
                     )
-                    c.commit()
-                    generated_code = code
+                    connection.commit()
+                    generated_code = new_code
                     generated_for = customer
                     break
                 except sqlite3.IntegrityError:
-                    c.rollback()
-            if generated_code is None:
+                    connection.rollback()
+
+            if not generated_code:
                 flash("Không thể tạo mã mới. Vui lòng thử lại.", "error")
-        except sqlite3.Error:
-            c.rollback()
+        except sqlite3.Error as exc:
+            connection.rollback()
+            app.logger.exception("Admin code generation error: %s", exc)
             flash("Không thể tạo mã lúc này. Vui lòng thử lại.", "error")
             return redirect(url_for("cskh_admin"))
         finally:
-            c.close()
+            connection.close()
 
-    c = conn()
+    connection = db()
     try:
-        customers = c.execute(
+        customers = connection.execute(
             """
             SELECT u.id,u.name,u.phone,p.package_name,p.reward_name,p.access_code,p.likes,p.result_code,p.last_completed_date
             FROM users u JOIN progress p ON p.user_id=u.id
@@ -630,7 +600,7 @@ def cskh_admin():
             ORDER BY u.id DESC
             """
         ).fetchall()
-        codes = c.execute(
+        codes = connection.execute(
             """
             SELECT ac.*,u.name AS customer_name,u.phone AS customer_phone,
                    CASE WHEN ac.used=0 AND ac.expires_at IS NOT NULL AND datetime(ac.expires_at)<=CURRENT_TIMESTAMP
@@ -641,7 +611,7 @@ def cskh_admin():
             """
         ).fetchall()
     finally:
-        c.close()
+        connection.close()
 
     return render_template(
         "cskh_admin.html",

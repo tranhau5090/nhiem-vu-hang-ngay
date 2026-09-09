@@ -1,54 +1,49 @@
+{% extends "base.html" %}
+{% block body %}
+<style>
+.support-shell{width:100%;max-width:760px;margin:0 auto}.support-hero{padding:22px;border-radius:20px;background:linear-gradient(145deg,#0f172a,#172554);color:#fff;box-shadow:0 14px 34px rgba(15,23,42,.14);margin:10px 0 14px}.support-kicker{font-size:11px;font-weight:800;letter-spacing:.7px;color:#f8e7a8;text-transform:uppercase}.support-hero h1{margin:8px 0 6px;font-size:26px}.support-hero p{margin:0;color:#cbd5e1;font-size:13px;line-height:1.55}.flow-card,.support-card{background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.05);margin-bottom:14px}.flow-title{font-size:14px;font-weight:900;color:#0f172a;margin-bottom:13px}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.step{position:relative;text-align:center;padding:11px 6px;border-radius:13px;background:#f8fafc;border:1px solid #e2e8f0;min-width:0}.step-num{width:25px;height:25px;border-radius:50%;margin:0 auto 6px;background:#0f172a;color:#f8e7a8;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}.step b{display:block;font-size:11px;color:#0f172a;line-height:1.35}.package-summary{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}.summary-box{padding:13px;border-radius:13px;background:#f8fafc;border:1px solid #e2e8f0}.summary-box span{display:block;color:#64748b;font-size:11px;margin-bottom:4px}.summary-box b{font-size:16px;color:#0f172a}.summary-box.reward b{color:#a66f0b}.support-primary{background:linear-gradient(135deg,#c9952e,#e0b84e)!important;color:#0f172a!important;box-shadow:0 7px 18px rgba(201,149,46,.18)}.divider{border:0;border-top:1px solid #e5e7eb;margin:20px 0}.code-title{font-size:18px;font-weight:900;color:#0f172a;margin-bottom:5px}.code-sub{font-size:12px;color:#64748b;line-height:1.5;margin-bottom:10px}.code-input{font-weight:800;letter-spacing:.7px;text-transform:uppercase}.support-note{margin-top:13px;padding:12px 13px;border-radius:13px;background:#fff9e8;border:1px solid #f3df9f;color:#6b4b07;font-size:12px;line-height:1.55}@media(max-width:520px){.support-hero{padding:19px 16px}.support-hero h1{font-size:23px}.flow{grid-template-columns:1fr 1fr}.package-summary{grid-template-columns:1fr}.flow-card,.support-card{padding:14px}}
+</style>
 
-{% extends "base.html" %}{% block body %}
-<div class="card">
-  <h2>Chăm sóc khách hàng</h2>
-  <div class="msg success">
-    <b>Gói đã chọn và gửi sang CSKH:</b> {{prog['package_name']}}<br>
-    <b>Điểm thưởng:</b> {{prog['reward_name']}}
-  </div>
+<div class="support-shell">
+  <section class="support-hero">
+    <div class="support-kicker">✦ DAILY REWARDS SUPPORT</div>
+    <h1>Chăm sóc khách hàng</h1>
+    <p>Thông tin gói đang được lưu trên tài khoản để hỗ trợ đúng gói và đúng người dùng.</p>
+  </section>
 
-  <p>Nhấn nút bên dưới để liên hệ chăm sóc khách hàng. CSKH sẽ thấy đúng gói đang lưu trên tài khoản và chỉ có thể cấp mã cho chính gói đó.</p>
+  <section class="flow-card">
+    <div class="flow-title">Quy trình tham gia</div>
+    <div class="flow">
+      <div class="step"><div class="step-num">1</div><b>Chọn gói</b></div>
+      <div class="step"><div class="step-num">2</div><b>Nhận mã</b></div>
+      <div class="step"><div class="step-num">3</div><b>10 nhiệm vụ</b></div>
+      <div class="step"><div class="step-num">4</div><b>Hoàn thành</b></div>
+    </div>
+  </section>
 
-  <button class="btn" onclick="openSupport()">Nhắn chăm sóc khách hàng</button>
+  <section class="support-card">
+    <div class="package-summary">
+      <div class="summary-box"><span>Gói điểm đã chọn</span><b>{{ prog['package_name'] }}</b></div>
+      <div class="summary-box reward"><span>Điểm thưởng</span><b>+{{ prog['reward_name'] }}</b></div>
+    </div>
 
-  <hr style="border:0;border-top:1px solid #e5e7eb;margin:18px 0">
+    <button class="btn support-primary" type="button" onclick="openSupport()">Nhắn Chăm sóc khách hàng</button>
 
-  <h3 style="margin-bottom:6px">Bạn đã có mã?</h3>
-  <form method="post">
-    <label>Nhập mã</label>
-    <input name="code" placeholder="Nhập mã dùng 1 lần do CSKH cấp cho đúng tài khoản và đúng gói" required>
-    <button class="btn secondary">Xác nhận mã</button>
-  </form>
+    <hr class="divider">
+    <div class="code-title">Bạn đã có mã?</div>
+    <div class="code-sub">Nhập mã dùng một lần do CSKH cấp cho đúng tài khoản và đúng gói. Mỗi mã có thời hạn sử dụng theo thông báo của hệ thống.</div>
+    <form method="post">
+      <label>Mã truy cập</label>
+      <input class="code-input" name="code" autocomplete="one-time-code" placeholder="Ví dụ: NV-ABC123" required>
+      <button class="btn secondary">Xác nhận mã →</button>
+    </form>
 
-  <a class="btn back" href="/packages">← Chọn lại gói điểm</a>
+    <a class="btn back" href="/packages">← Chọn lại gói điểm</a>
+    <div class="support-note">DAILY REWARDS chỉ hiển thị điểm nội bộ của hệ thống nhiệm vụ. Không gửi mật khẩu tài khoản cho bất kỳ ai qua cửa sổ hỗ trợ.</div>
+  </section>
 </div>
 
-
-
-
 <script>
-function openSupport() {
-    window.$crisp = window.$crisp || [];
-
-    const goi = {{ prog['package_name'] | tojson }};
-    const thuong = {{ prog['reward_name'] | tojson }};
-
-    window.$crisp.push([
-        "set",
-        "session:data",
-        [[
-            ["goi_diem", goi],
-            ["diem_thuong", thuong]
-        ]]
-    ]);
-
-    window.$crisp.push(["do", "chat:open"]);
-
-    window.$crisp.push([
-        "do",
-        "message:send",
-        ["text", "Xin chào CSKH, tôi cần hỗ trợ gói " + goi + " - điểm thưởng " + thuong + "."]
-    ]);
-}
+function openSupport(){window.$crisp=window.$crisp||[];const goi={{ prog['package_name'] | tojson }};const thuong={{ prog['reward_name'] | tojson }};window.$crisp.push(['set','session:data',[[['goi_diem',goi],['diem_thuong',thuong]]]]);window.$crisp.push(['do','chat:open']);window.$crisp.push(['do','message:send',['text','Xin chào CSKH, tôi cần hỗ trợ gói '+goi+' - điểm thưởng '+thuong+'.']]);}
 </script>
 {% endblock %}

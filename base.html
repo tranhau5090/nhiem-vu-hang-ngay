@@ -17,21 +17,33 @@ input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;margin
 .progress{height:12px;background:#e5e7eb;border-radius:999px;overflow:hidden}.bar{height:100%;background:#2563eb}
 .small{font-size:12px;color:#6b7280}.top{width:100%;max-width:760px;display:flex;justify-content:space-between;align-items:center;margin:0 auto 8px}
 .brand-mini{display:flex;align-items:center;gap:9px}.brand-mini-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#f8e7a8,#c9952e);display:flex;align-items:flex-end;justify-content:center;padding:7px;gap:2px}.brand-mini-mark span{display:block;width:4px;background:#0f172a;border-radius:1px 1px 0 0}.brand-mini-mark span:nth-child(1){height:9px}.brand-mini-mark span:nth-child(2){height:14px}.brand-mini-mark span:nth-child(3){height:20px}.brand-mini-mark span:nth-child(4){height:15px}.brand-mini-mark span:nth-child(5){height:10px}.brand-mini-text{font-size:20px;font-weight:900;letter-spacing:.7px;color:#0f172a}
+.site-footer{width:100%;max-width:760px;margin:34px auto 8px;padding:22px 16px 10px;border-top:1px solid #e2e8f0;text-align:center}.footer-brand{font-size:14px;font-weight:900;letter-spacing:1px;color:#0f172a;margin-bottom:10px}.footer-links{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:7px 14px}.footer-links a,.footer-links button{border:0;background:none;padding:3px 0;color:#475569;font-size:13px;text-decoration:none;cursor:pointer;font-family:inherit}.footer-links a:hover,.footer-links button:hover{color:#1d4ed8}.footer-copy{font-size:12px;color:#94a3b8;margin-top:13px;line-height:1.5}
 button,input,a{-webkit-tap-highlight-color:transparent}
 img{max-width:100%;height:auto}
 @media (min-width:768px){.card{padding:24px}.grid{grid-template-columns:repeat(3,1fr)}.task{padding:15px}.btn{max-width:420px;margin-left:auto;margin-right:auto}}
-@media (max-width:767px){.wrap{padding:12px}.top{align-items:flex-start;gap:8px}.brand-mini-text{font-size:18px}.card{padding:16px;border-radius:16px;margin:10px auto}.grid{grid-template-columns:1fr 1fr;gap:8px}.pkg{padding:12px 8px}.task{padding:11px;align-items:center}.task b{font-size:14px}.like{white-space:nowrap}}
+@media (max-width:767px){.wrap{padding:12px}.top{align-items:flex-start;gap:8px}.brand-mini-text{font-size:18px}.card{padding:16px;border-radius:16px;margin:10px auto}.grid{grid-template-columns:1fr 1fr;gap:8px}.pkg{padding:12px 8px}.task{padding:11px;align-items:center}.task b{font-size:14px}.like{white-space:nowrap}.site-footer{margin-top:26px;padding-left:8px;padding-right:8px}.footer-links{gap:8px 12px}}
 @media (max-width:390px){.wrap{padding:9px}.grid{grid-template-columns:1fr}.tabs{grid-template-columns:1fr 1fr}.task{gap:7px}.like{padding:8px 9px}.brand-mini-text{font-size:16px}}
 </style></head><body><div class="wrap">
 <div class="top"><div class="brand-mini"><div class="brand-mini-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div><div class="brand-mini-text">DAILY REWARDS</div></div>{% if session.get('uid') %}<a href="/logout">Đăng xuất</a>{% endif %}</div>
 {% with messages=get_flashed_messages(with_categories=true) %}{% for cat,msg in messages %}<div class="msg {{cat}}">{{msg}}</div>{% endfor %}{% endwith %}
 {% block body %}{% endblock %}
+<footer class="site-footer">
+  <div class="footer-brand">DAILY REWARDS</div>
+  <nav class="footer-links" aria-label="Thông tin website">
+    <a href="/about">Giới thiệu</a>
+    <a href="/terms">Điều khoản sử dụng</a>
+    <a href="/privacy">Chính sách bảo mật</a>
+    <button type="button" onclick="openFooterSupport()">Liên hệ CSKH</button>
+  </nav>
+  <div class="footer-copy">© 2026 DAILY REWARDS · Hệ thống nhiệm vụ &amp; tích điểm mỗi ngày</div>
+</footer>
 </div>
 <!-- Crisp Chat -->
 <script type="text/javascript">
 window.$crisp=[];
 window.CRISP_WEBSITE_ID="ea2b7ad7-0a85-484e-a27d-ab34143d0663";
 (function(){var d=document;var s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();
+function openFooterSupport(){window.$crisp=window.$crisp||[];window.$crisp.push(["do","chat:open"]);}
 </script>
 <!-- End Crisp Chat -->
 </body></html>

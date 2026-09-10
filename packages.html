@@ -1,63 +1,20 @@
 {% extends "base.html" %}
 {% block body %}
 <style>
-.package-shell{width:100%;max-width:760px;margin:0 auto}
-.package-hero{position:relative;overflow:hidden;padding:24px 22px;margin:10px 0 14px;border-radius:20px;background:linear-gradient(145deg,#0f172a,#172554);color:#fff;box-shadow:0 14px 34px rgba(15,23,42,.14)}
-.package-hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-65px;top:-80px;background:rgba(201,149,46,.13)}
-.package-kicker{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid rgba(248,231,168,.28);border-radius:999px;background:rgba(248,231,168,.08);color:#f8e7a8;font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
-.package-hero h1{position:relative;margin:13px 0 7px;font-size:27px;line-height:1.2}.package-hero p{position:relative;margin:0;max-width:570px;color:#cbd5e1;font-size:14px;line-height:1.6}
-.package-user{display:flex;align-items:center;gap:10px;margin-top:16px;color:#e2e8f0;font-size:13px}.user-dot{width:9px;height:9px;border-radius:50%;background:#f1cf70;box-shadow:0 0 0 4px rgba(241,207,112,.12)}
-.package-card{background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:20px;box-shadow:0 8px 24px rgba(15,23,42,.05)}
-.section-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:14px}.section-head h2{margin:0;font-size:20px;color:#0f172a}.section-head span{font-size:12px;color:#64748b}
-.package-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-.package-option{position:relative;display:block;cursor:pointer}.package-option input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;margin:0}
-.package-box{height:100%;min-height:142px;border:1.5px solid #e2e8f0;border-radius:16px;padding:15px;background:linear-gradient(180deg,#fff,#f8fafc);transition:.18s ease;display:flex;flex-direction:column;justify-content:space-between}
-.package-option:hover .package-box{border-color:#c9952e;transform:translateY(-1px)}
-.package-option input:checked + .package-box{border-color:#c9952e;background:linear-gradient(145deg,#0f172a,#172554);box-shadow:0 9px 24px rgba(15,23,42,.16)}
-.package-top{display:flex;justify-content:space-between;gap:8px;align-items:center}.package-label{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#64748b}.package-check{width:22px;height:22px;border:1.5px solid #cbd5e1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;background:#fff}
-.package-option input:checked + .package-box .package-check{border-color:#f1cf70;background:#f1cf70;color:#0f172a;font-weight:900}.package-option input:checked + .package-box .package-label{color:#f8e7a8}
-.package-points{font-size:24px;font-weight:900;color:#0f172a;margin:8px 0 13px;letter-spacing:-.4px}.reward-line{border-top:1px solid #e2e8f0;padding-top:11px;display:flex;align-items:center;justify-content:space-between;gap:7px;color:#64748b;font-size:12px}.reward-line strong{color:#a66f0b;font-size:16px}
-.package-option input:checked + .package-box .package-points{color:#fff}.package-option input:checked + .package-box .reward-line{border-color:rgba(255,255,255,.13);color:#cbd5e1}.package-option input:checked + .package-box .reward-line strong{color:#f8e7a8}
-.flow-note{display:flex;gap:10px;align-items:flex-start;margin:16px 0 4px;padding:12px 13px;border-radius:13px;background:#f8fafc;border:1px solid #e2e8f0;color:#475569;font-size:12px;line-height:1.55}.flow-icon{flex:0 0 25px;height:25px;border-radius:8px;background:#fff3cf;color:#8a5b00;display:flex;align-items:center;justify-content:center;font-weight:900}
-.package-submit{margin-top:15px!important;background:linear-gradient(135deg,#c9952e,#e0b84e)!important;color:#0f172a!important;box-shadow:0 8px 20px rgba(201,149,46,.22);font-size:15px}.package-submit:hover{filter:brightness(1.03)}
-.points-disclaimer{text-align:center;margin:12px 0 0;color:#94a3b8;font-size:11px;line-height:1.5}
-@media(min-width:700px){.package-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.package-box{min-height:150px}}
-@media(max-width:430px){.package-hero{padding:20px 16px}.package-hero h1{font-size:23px}.package-card{padding:14px}.package-grid{gap:8px}.package-box{padding:12px;min-height:135px}.package-points{font-size:20px}.reward-line{display:block}.reward-line strong{display:block;margin-top:3px}.section-head{display:block}.section-head span{display:block;margin-top:4px}}
+.package-shell{width:100%;max-width:720px;margin:0 auto}.stepbar{display:flex;gap:5px;margin:10px 0 12px}.stepbar span{flex:1;text-align:center;padding:8px 3px;border-radius:10px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:800}.stepbar .active{background:#0f172a;color:#f8e7a8}.package-hero{padding:21px 18px;margin-bottom:12px;border-radius:19px;background:linear-gradient(145deg,#0f172a,#172554);color:#fff}.package-hero .eyebrow{color:#f8e7a8;font-size:11px;font-weight:900}.package-hero h1{margin:7px 0 5px;font-size:25px}.package-hero p{margin:0;color:#cbd5e1;font-size:13px}.package-card{background:#fff;border:1px solid #e5e7eb;border-radius:19px;padding:16px}.package-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.package-option{display:block;cursor:pointer;position:relative}.package-option input{position:absolute;opacity:0}.package-box{border:1.5px solid #e2e8f0;border-radius:15px;padding:13px;min-height:108px;background:#fff}.package-option input:checked + .package-box{border-color:#c9952e;background:#0f172a;color:#fff;box-shadow:0 7px 18px rgba(15,23,42,.13)}.package-points{font-size:20px;font-weight:900;margin-bottom:9px}.reward{font-size:12px;color:#64748b;border-top:1px solid #e5e7eb;padding-top:8px}.reward strong{display:block;color:#a66f0b;font-size:15px;margin-top:2px}.package-option input:checked + .package-box .reward{color:#cbd5e1;border-color:#334155}.package-option input:checked + .package-box .reward strong{color:#f8e7a8}.package-submit{margin-top:14px!important;max-width:none!important;width:100%!important;background:linear-gradient(135deg,#c9952e,#e0b84e)!important;color:#0f172a!important;font-weight:900!important}.help{text-align:center;color:#64748b;font-size:11px;line-height:1.5;margin-top:11px}@media(min-width:700px){.package-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:430px){.package-card{padding:12px}.package-grid{gap:7px}.package-box{padding:11px}.package-points{font-size:18px}}
 </style>
-
 <div class="package-shell">
-  <section class="package-hero">
-    <div class="package-kicker">✦ DAILY REWARDS</div>
-    <h1>Chọn gói điểm hôm nay</h1>
-    <p>Chọn gói phù hợp để tiếp tục quy trình nhiệm vụ. Mỗi gói hiển thị rõ số điểm của gói và số điểm thưởng tương ứng.</p>
-    {% if user %}<div class="package-user"><span class="user-dot"></span><span>Tài khoản: <b>{{ user['name'] }}</b></span></div>{% endif %}
-  </section>
-
+  <div class="stepbar"><span class="active">1 Chọn gói</span><span>2 Nhận mã</span><span>3 Nhiệm vụ</span><span>4 Xong</span></div>
+  <section class="package-hero"><div class="eyebrow">BƯỚC 1/4</div><h1>Chọn một gói điểm</h1><p>Chạm vào gói bạn muốn, sau đó bấm Tiếp tục.</p></section>
   <section class="package-card">
-    <div class="section-head">
-      <h2>Gói điểm → Điểm thưởng</h2>
-      <span>Chọn 1 trong {{ packages|length }} gói</span>
-    </div>
-
     <form method="post" action="/choose-package">
       <div class="package-grid">
         {% for p in packages %}
-        <label class="package-option">
-          <input type="radio" name="package_idx" value="{{ loop.index0 }}" required>
-          <div class="package-box">
-            <div>
-              <div class="package-top"><span class="package-label">Gói điểm</span><span class="package-check">✓</span></div>
-              <div class="package-points">{{ p[0] }}</div>
-            </div>
-            <div class="reward-line"><span>Điểm thưởng</span><strong>+{{ p[1] }}</strong></div>
-          </div>
-        </label>
+        <label class="package-option"><input type="radio" name="package_idx" value="{{ loop.index0 }}" required><div class="package-box"><div class="package-points">{{ p[0] }}</div><div class="reward">Điểm thưởng<strong>+{{ p[1] }}</strong></div></div></label>
         {% endfor %}
       </div>
-
-      <div class="flow-note"><div class="flow-icon">i</div><div>Sau khi chọn gói, hệ thống sẽ chuyển bạn đến <b>Chăm sóc khách hàng</b> để tiếp tục nhận mã tham gia.</div></div>
-      <button class="btn package-submit" type="submit">Tiếp tục với gói đã chọn →</button>
-      <div class="points-disclaimer">Gói và điểm thưởng hiển thị trên website là điểm nội bộ của hệ thống nhiệm vụ, không phải tiền hoặc số dư tài chính.</div>
+      <button class="btn package-submit" type="submit">Tiếp tục →</button>
+      <div class="help">Bước tiếp theo: liên hệ CSKH để nhận mã tham gia. Điểm là điểm nội bộ của hệ thống.</div>
     </form>
   </section>
 </div>

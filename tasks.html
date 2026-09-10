@@ -15,9 +15,36 @@
 ] %}
 
 <style>
-.task-shell{width:100%;max-width:760px;margin:0 auto}.task-hero{padding:22px;border-radius:20px;background:linear-gradient(145deg,#0f172a,#172554);color:#fff;box-shadow:0 14px 34px rgba(15,23,42,.14);margin:10px 0 14px}.task-kicker{font-size:11px;font-weight:800;letter-spacing:.7px;color:#f8e7a8;text-transform:uppercase}.task-hero h1{margin:8px 0 5px;font-size:26px}.task-hero p{margin:0;color:#cbd5e1;font-size:13px;line-height:1.55}.summary-card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:16px;margin-bottom:14px}.summary-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.summary-title{font-size:14px;font-weight:800;color:#0f172a}.summary-count{font-size:14px;font-weight:900;color:#a66f0b}.progress{height:11px;background:#e5e7eb;border-radius:999px;overflow:hidden}.bar{height:100%;background:linear-gradient(90deg,#c9952e,#f1cf70);transition:.2s ease}
-#tasks{display:grid;grid-template-columns:1fr;gap:12px}.product-task{display:block!important;padding:0!important;overflow:hidden;background:#fff;border:1px solid #e5e7eb!important;border-radius:17px!important;box-shadow:0 6px 18px rgba(15,23,42,.04)}.product-img-wrap{width:100%;aspect-ratio:16/10;background:#f3f4f6;overflow:hidden}.product-img{width:100%;height:100%;object-fit:cover;display:block}.product-body{padding:13px}.task-no{font-size:11px;font-weight:800;letter-spacing:.5px;color:#a66f0b;text-transform:uppercase;margin-bottom:5px}.product-title{font-size:16px;font-weight:900;color:#0f172a;margin-bottom:5px}.product-task .small{line-height:1.5}.product-task .like{width:100%;min-height:44px;margin-top:11px;border:1px solid #d8b45e;background:#fff8e3;color:#8a5b00;font-weight:800;transition:.18s ease}.product-task .like:not(:disabled):hover{background:#f6e5b6}.product-task .like:disabled{background:#0f172a;color:#f8e7a8;border-color:#0f172a;opacity:1}.complete-btn{background:linear-gradient(135deg,#c9952e,#e0b84e)!important;color:#0f172a!important;box-shadow:0 8px 20px rgba(201,149,46,.22);margin-top:16px!important}.task-note{text-align:center;color:#64748b;font-size:11px;line-height:1.5;margin-top:12px}
-@media(min-width:700px){ #tasks{grid-template-columns:1fr 1fr}.task-hero{padding:26px}.task-hero h1{font-size:29px}}
+.task-shell{width:100%;max-width:780px;margin:0 auto}
+.task-hero{padding:24px;border-radius:20px;background:linear-gradient(145deg,#0f172a,#172554);color:#fff;box-shadow:0 14px 34px rgba(15,23,42,.14);margin:10px 0 14px}
+.task-kicker{font-size:11px;font-weight:800;letter-spacing:.7px;color:#f8e7a8;text-transform:uppercase}
+.task-hero h1{margin:8px 0 6px;font-size:27px}
+.task-hero p{margin:0;color:#cbd5e1;font-size:13px;line-height:1.6}
+.summary-card,.info-card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:16px;margin-bottom:14px}
+.summary-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.summary-title{font-size:14px;font-weight:800;color:#0f172a}
+.summary-count{font-size:14px;font-weight:900;color:#a66f0b}
+.progress{height:11px;background:#e5e7eb;border-radius:999px;overflow:hidden}
+.bar{height:100%;background:linear-gradient(90deg,#c9952e,#f1cf70);transition:.2s ease}
+.info-row{display:flex;gap:10px;align-items:flex-start}
+.info-icon{width:34px;height:34px;border-radius:10px;background:#fff6d8;display:flex;align-items:center;justify-content:center;color:#8a5b00;font-weight:900;flex:0 0 auto}
+.info-title{font-weight:900;color:#0f172a;font-size:14px;margin-bottom:3px}
+.info-text{font-size:12px;color:#64748b;line-height:1.55}
+.tasks-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.product-task{display:block!important;padding:0!important;overflow:hidden;background:#fff;border:1px solid #e5e7eb!important;border-radius:17px!important;box-shadow:0 6px 18px rgba(15,23,42,.04)}
+.product-img-wrap{width:100%;aspect-ratio:16/10;background:#f3f4f6;overflow:hidden}
+.product-img{width:100%;height:100%;object-fit:cover;display:block}
+.product-body{padding:14px}
+.task-no{font-size:11px;font-weight:800;letter-spacing:.5px;color:#a66f0b;text-transform:uppercase;margin-bottom:5px}
+.product-title{font-size:16px;font-weight:900;color:#0f172a;margin-bottom:4px}
+.product-meta{font-size:12px;color:#64748b;margin-bottom:9px}
+.product-desc{font-size:12px;line-height:1.55;color:#475569;background:#f8fafc;border-radius:10px;padding:9px 10px}
+.product-task .task-action{width:100%;min-height:44px;margin-top:11px;border:1px solid #d8b45e;background:#fff8e3;color:#8a5b00;font-weight:800;transition:.18s ease}
+.product-task .task-action:not(:disabled):hover{background:#f6e5b6}
+.product-task .task-action:disabled{background:#0f172a;color:#f8e7a8;border-color:#0f172a;opacity:1}
+.complete-btn{background:linear-gradient(135deg,#c9952e,#e0b84e)!important;color:#0f172a!important;box-shadow:0 8px 20px rgba(201,149,46,.22);margin-top:16px!important}
+.task-note{text-align:center;color:#64748b;font-size:11px;line-height:1.5;margin-top:12px}
+@media(min-width:700px){.tasks-grid{grid-template-columns:1fr 1fr}.task-hero{padding:27px}.task-hero h1{font-size:30px}}
 @media(max-width:430px){.task-hero{padding:19px 16px}.task-hero h1{font-size:23px}.product-body{padding:12px}}
 </style>
 
@@ -25,34 +52,88 @@
   <section class="task-hero">
     <div class="task-kicker">✦ DAILY REWARDS</div>
     <h1>Nhiệm vụ hôm nay</h1>
-    <p>Hoàn thành đủ 10 nhiệm vụ để kết thúc lượt hôm nay. Mỗi nhiệm vụ được ghi nhận trực tiếp trên tài khoản của bạn.</p>
+    <p>Hoàn thành 10 nội dung được hệ thống phân bổ trong ngày. Mỗi nhiệm vụ được ghi nhận một lần trên tài khoản của bạn.</p>
   </section>
 
   <section class="summary-card">
-    <div class="summary-top"><span class="summary-title">Tiến độ nhiệm vụ</span><span class="summary-count"><span id="count">{{ prog['likes'] }}</span>/10</span></div>
+    <div class="summary-top">
+      <span class="summary-title">Tiến độ hôm nay</span>
+      <span class="summary-count"><span id="count">{{ prog['likes'] }}</span>/10 nhiệm vụ · <span id="points">{{ prog['likes'] * 2 }}</span>/20 điểm</span>
+    </div>
     <div class="progress"><div id="bar" class="bar" style="width:{{ prog['likes'] * 10 }}%"></div></div>
   </section>
 
-  <div id="tasks">
+  <section class="info-card">
+    <div class="info-row">
+      <div class="info-icon">✓</div>
+      <div>
+        <div class="info-title">Quy trình ghi nhận rõ ràng</div>
+        <div class="info-text">Bạn xem nội dung được hiển thị và xác nhận hoàn thành. Hệ thống chỉ ghi nhận mỗi nhiệm vụ một lần và cập nhật tiến độ trực tiếp trên tài khoản.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="tasks-grid">
     {% for p in products %}
       {% set task_id = loop.index %}
       <div class="task product-task">
         <div class="product-img-wrap"><img src="{{ product_images[loop.index0] }}" alt="{{ p[0] }}" class="product-img" loading="lazy" decoding="async" onerror="this.style.display='none'"></div>
         <div class="product-body">
-          <div class="task-no">Nhiệm vụ {{ task_id }}/10</div>
+          <div class="task-no">Nội dung {{ task_id }}/10</div>
           <div class="product-title">{{ p[0] }}</div>
-          <div class="small">{{ p[1] }}</div>
-          <button class="like" data-task-id="{{ task_id }}" onclick="likeOne(this)" {% if task_id in done_ids %}disabled{% endif %}>{% if task_id in done_ids %}♥ Đã hoàn thành · +2{% else %}♡ THẢ TIM +2{% endif %}</button>
+          <div class="product-meta">{{ p[1] }} · +2 điểm nội bộ</div>
+          <div class="product-desc">Xem thông tin sản phẩm và xác nhận khi bạn đã hoàn tất nội dung này.</div>
+          <button class="task-action" data-task-id="{{ task_id }}" onclick="completeTask(this)" {% if task_id in done_ids %}disabled{% endif %}>{% if task_id in done_ids %}✓ Đã hoàn thành · +2 điểm{% else %}Xác nhận đã xem · +2 điểm{% endif %}</button>
         </div>
       </div>
     {% endfor %}
   </div>
 
   <a id="complete" class="btn complete-btn" href="/complete" style="{% if prog['likes'] < 10 %}display:none{% endif %}">Hoàn thành 10/10 →</a>
-  <div class="task-note">Điểm trên website là điểm nội bộ của hệ thống nhiệm vụ.</div>
+  <div class="task-note">Điểm hiển thị trên website là điểm nội bộ của hệ thống nhiệm vụ, không phải tiền hoặc số dư tài chính.</div>
 </div>
 
 <script>
-async function likeOne(btn){if(btn.disabled)return;const taskId=Number(btn.dataset.taskId);btn.disabled=true;try{const response=await fetch('/like',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task_id:taskId})});let data={};try{data=await response.json();}catch(e){btn.disabled=false;alert('Máy chủ trả về dữ liệu không hợp lệ. Vui lòng tải lại trang.');return;}if(data.ok){btn.textContent='♥ Đã hoàn thành · +2';document.getElementById('count').textContent=data.likes;document.getElementById('bar').style.width=(data.likes*10)+'%';if(data.likes>=10)document.getElementById('complete').style.display='block';return;}if(data.already_done){btn.textContent='♥ Đã hoàn thành · +2';if(typeof data.likes!=='undefined'){document.getElementById('count').textContent=data.likes;document.getElementById('bar').style.width=(data.likes*10)+'%';}return;}btn.disabled=false;alert(data.message||'Không thể hoàn thành nhiệm vụ.');}catch(e){btn.disabled=false;alert('Không kết nối được máy chủ. Vui lòng thử lại.');}}
+async function completeTask(btn){
+  if(btn.disabled)return;
+  const taskId=Number(btn.dataset.taskId);
+  btn.disabled=true;
+  try{
+    const response=await fetch('/like',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({task_id:taskId})
+    });
+    let data={};
+    try{data=await response.json();}
+    catch(e){
+      btn.disabled=false;
+      alert('Máy chủ trả về dữ liệu không hợp lệ. Vui lòng tải lại trang.');
+      return;
+    }
+    if(data.ok){
+      btn.textContent='✓ Đã hoàn thành · +2 điểm';
+      document.getElementById('count').textContent=data.likes;
+      document.getElementById('points').textContent=data.likes*2;
+      document.getElementById('bar').style.width=(data.likes*10)+'%';
+      if(data.likes>=10)document.getElementById('complete').style.display='block';
+      return;
+    }
+    if(data.already_done){
+      btn.textContent='✓ Đã hoàn thành · +2 điểm';
+      if(typeof data.likes!=='undefined'){
+        document.getElementById('count').textContent=data.likes;
+        document.getElementById('points').textContent=data.likes*2;
+        document.getElementById('bar').style.width=(data.likes*10)+'%';
+      }
+      return;
+    }
+    btn.disabled=false;
+    alert(data.message||'Không thể hoàn thành nhiệm vụ.');
+  }catch(e){
+    btn.disabled=false;
+    alert('Không kết nối được máy chủ. Vui lòng thử lại.');
+  }
+}
 </script>
 {% endblock %}
